@@ -196,39 +196,6 @@ canvas:active { cursor:grabbing; }
   </div>
 </div>
 
-<div id="sliders">
-  <h2>점수 컨트롤</h2>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 움직이기</span><span class="value" id="val-move">72</span></div>
-    <input type="range" min="0" max="100" value="72" id="slider-move">
-  </div>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 쉬기</span><span class="value" id="val-rest">60</span></div>
-    <input type="range" min="0" max="100" value="60" id="slider-rest">
-  </div>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 가꾸기</span><span class="value" id="val-groom">48</span></div>
-    <input type="range" min="0" max="100" value="48" id="slider-groom">
-  </div>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 다스리기</span><span class="value" id="val-manage">80</span></div>
-    <input type="range" min="0" max="100" value="80" id="slider-manage">
-  </div>
-  <button id="submit-btn">입력</button>
-  <div id="triggers">
-    <h3>트리거</h3>
-    <div id="trigger-buttons">
-      <button class="trigger-btn">100번째 방문</button>
-      <button class="trigger-btn">지난 한 달 간 미접속</button>
-      <button class="trigger-btn">이벤트</button>
-      <div class="trigger-row">
-        <button class="trigger-btn">동일연령 총점 평균보다 낮음</button>
-        <button class="trigger-btn">높음</button>
-      </div>
-      <button class="trigger-btn">잘 다스리기 20점 하락</button>
-    </div>
-  </div>
-</div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -903,7 +870,11 @@ renderer.shadowMap.render = function (lights, scn, cam) {
 
 // ─── 렌더 루프 ───
 let _last = performance.now();
+let _paused = false;
+window.__pauseRender = () => { _paused = true; };
+window.__resumeRender = () => { if (_paused) { _paused = false; _last = performance.now(); animate(); } };
 function animate() {
+  if (_paused) return;
   requestAnimationFrame(animate);
   const now = performance.now();
   const dt = Math.min((now - _last) / 1000, 0.05);
@@ -922,43 +893,8 @@ function animate() {
 }
 animate();
 
-// ─── 슬라이더: 값 표시 동기화 (Slow_Museum과 동일 흐름) ───
-// 현 단계는 컨트롤 미연동: 슬라이더/입력은 카드 숫자만 갱신, 보드 씬은 미반응.
-const sliderConfig = [
-  { id: 'move',   valueId: 'val-move',   cardId: 'card-move'   },
-  { id: 'rest',   valueId: 'val-rest',   cardId: 'card-rest'   },
-  { id: 'groom',  valueId: 'val-groom',  cardId: 'card-groom'  },
-  { id: 'manage', valueId: 'val-manage', cardId: 'card-manage' },
-];
-const scores = {};
-const cardEls = {};
-function paintSlider(slider) {
-  const v = parseInt(slider.value, 10);
-  slider.style.background =
-    `linear-gradient(to right, #ffcead 0%, #ffcead ${v}%, #e9e2d8 ${v}%, #e9e2d8 100%)`;
-}
-sliderConfig.forEach(({ id, valueId, cardId }) => {
-  const slider = document.getElementById('slider-' + id);
-  const valueLabel = document.getElementById(valueId);
-  cardEls[id] = document.getElementById(cardId);
-  scores[id] = parseInt(slider.value, 10);
-  paintSlider(slider);
-  slider.addEventListener('input', () => {
-    valueLabel.textContent = slider.value;
-    paintSlider(slider);
-  });
-});
-function applyScores() {
-  sliderConfig.forEach(({ id }) => {
-    const slider = document.getElementById('slider-' + id);
-    scores[id] = parseInt(slider.value, 10);
-    cardEls[id].textContent = scores[id];
-  });
-  onScoresApplied();
-}
-// TODO(다음 단계): 점수 → 말 속도 / 슬롯 잠금 / 보상 드랍 연동 지점.
-function onScoresApplied() {}
-document.getElementById('submit-btn').addEventListener('click', applyScores);
+// 슬라이더 UI 제거됨 — My Care Lab 부모 페이지가 점수 관리.
+const scores = { move: 72, rest: 60, groom: 48, manage: 80 };
 
 window.__debug = { camera, scene, look, tilesInOrder };
 window.__scores = scores;

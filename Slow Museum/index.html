@@ -220,39 +220,6 @@ canvas:active { cursor:grabbing; }
   </div>
 </div>
 
-<div id="sliders">
-  <h2>점수 컨트롤</h2>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 움직이기</span><span class="value" id="val-move">72</span></div>
-    <input type="range" min="0" max="100" value="72" id="slider-move">
-  </div>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 쉬기</span><span class="value" id="val-rest">60</span></div>
-    <input type="range" min="0" max="100" value="60" id="slider-rest">
-  </div>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 가꾸기</span><span class="value" id="val-groom">48</span></div>
-    <input type="range" min="0" max="100" value="48" id="slider-groom">
-  </div>
-  <div class="slider-row">
-    <div class="label-row"><span class="label">잘 다스리기</span><span class="value" id="val-manage">80</span></div>
-    <input type="range" min="0" max="100" value="80" id="slider-manage">
-  </div>
-  <button id="submit-btn">입력</button>
-  <div id="triggers">
-    <h3>트리거</h3>
-    <div id="trigger-buttons">
-      <button class="trigger-btn">100번째 방문</button>
-      <button class="trigger-btn">지난 한 달 간 미접속</button>
-      <button class="trigger-btn">이벤트</button>
-      <div class="trigger-row">
-        <button class="trigger-btn">동일연령 총점 평균보다 낮음</button>
-        <button class="trigger-btn">높음</button>
-      </div>
-      <button class="trigger-btn">잘 다스리기 20점 하락</button>
-    </div>
-  </div>
-</div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1163,7 +1130,11 @@ function dofFocusDistance() {
 }
 
 let _last = performance.now();
+let _paused = false;
+window.__pauseRender = () => { _paused = true; };
+window.__resumeRender = () => { if (_paused) { _paused = false; _last = performance.now(); animate(); } };
 function animate() {
+  if (_paused) return;   // 일시정지 시 RAF 체인 끊음 → CPU/GPU 부담 0
   requestAnimationFrame(animate);
   const now = performance.now();
   const dt = Math.min((now - _last) / 1000, 0.05);
@@ -1187,42 +1158,9 @@ function animate() {
 }
 animate();
 
-// ─── 슬라이더: 값 표시 동기화 (slow_planet과 동일 흐름) ───
-// 슬라이더 조작은 draft 값만 갱신. '입력' 버튼을 눌러야 scores/카드/조명에 반영됨.
-const sliderConfig = [
-  { id: 'move',   valueId: 'val-move',   cardId: 'card-move'   },
-  { id: 'rest',   valueId: 'val-rest',   cardId: 'card-rest'   },
-  { id: 'groom',  valueId: 'val-groom',  cardId: 'card-groom'  },
-  { id: 'manage', valueId: 'val-manage', cardId: 'card-manage' },
-];
-const scores = {};
-const cardEls = {};
-function paintSlider(slider) {
-  const v = parseInt(slider.value, 10);
-  slider.style.background =
-    `linear-gradient(to right, #cbc3ba 0%, #cbc3ba ${v}%, #e0e0e0 ${v}%, #e0e0e0 100%)`;
-}
-sliderConfig.forEach(({ id, valueId, cardId }) => {
-  const slider = document.getElementById('slider-' + id);
-  const valueLabel = document.getElementById(valueId);
-  cardEls[id] = document.getElementById(cardId);
-  scores[id] = parseInt(slider.value, 10);
-  paintSlider(slider);
-  slider.addEventListener('input', () => {
-    valueLabel.textContent = slider.value;
-    paintSlider(slider);
-  });
-});
-
-function applyScores() {
-  sliderConfig.forEach(({ id }) => {
-    const slider = document.getElementById('slider-' + id);
-    scores[id] = parseInt(slider.value, 10);
-    cardEls[id].textContent = scores[id];
-  });
-  updateZoneLighting();
-}
-document.getElementById('submit-btn').addEventListener('click', applyScores);
+// 슬라이더 UI 제거됨 — My Care Lab 부모 페이지가 점수 관리.
+// 갤러리 조명은 기본값으로 한 번만 세팅. 부모가 점수 주입하려면 window.__scores 사용.
+const scores = { move: 72, rest: 60, groom: 48, manage: 80 };
 updateZoneLighting();
 
 // ─── (dev) 디버그용 외부 노출 ───

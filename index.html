@@ -2577,8 +2577,9 @@ function bindTabbar() {
   });
 }
 
-/* Tabbar visibility — hide on chat & reward screens.
-   대시보드 활성 시 phone에 .is-dashboard 클래스 부여 → 상태바 숨김 + 탭바 오버레이. */
+/* Tabbar visibility + 비활성 iframe Three.js 일시정지.
+   대시보드를 떠나면 활성 iframe의 RAF 루프 정지 → 솔루션 챗/Canvas Warp의 lag 해소.
+   대시보드로 복귀 시 resume. */
 const _origGoScreen = goScreen;
 goScreen = function(id) {
   _origGoScreen(id);
@@ -2586,6 +2587,11 @@ goScreen = function(id) {
   const showTabs = (id === 'screen-home' || id === 'screen-dashboard');
   tabbar.classList.toggle('hide', !showTabs);
   document.getElementById('phone').classList.toggle('is-dashboard', id === 'screen-dashboard');
+
+  // 대시보드 떠나면 활성 테마 iframe 일시정지, 복귀 시 재개
+  const active = document.querySelector('.museum-frame.active');
+  const fn = (id === 'screen-dashboard') ? '__resumeRender' : '__pauseRender';
+  try { active?.contentWindow?.[fn]?.(); } catch (e) {}
 };
 
 /* ----------- Utils ----------- */
