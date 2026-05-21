@@ -72,8 +72,12 @@
     z-index: 20;
   }
   .statusbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 50px;
-    flex: 0 0 50px;
+    z-index: 30;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -82,6 +86,8 @@
     font-weight: 600;
     color: var(--ink);
     letter-spacing: .2px;
+    pointer-events: none;
+    transition: opacity .25s ease;
   }
   .statusbar .icons { display: flex; gap: 5px; align-items: center; }
   .statusbar .icons svg { display: block; }
@@ -100,9 +106,14 @@
     background: var(--frame);
     transform: translateX(100%);
     transition: transform .35s cubic-bezier(.4,.2,.2,1);
+    /* statusbar/tabbar가 absolute 오버레이라 padding으로 안전영역 확보 */
+    padding-top: 50px;
+    padding-bottom: 60px;
   }
   .screen.active { transform: translateX(0); }
   .screen.exit-left { transform: translateX(-30%); }
+  /* 대시보드만 full-bleed — iframe이 360×780 그대로 들어감 */
+  #screen-dashboard { padding: 0; }
 
   /* Header */
   .topbar {
@@ -1105,9 +1116,13 @@
   .hide { display: none !important; }
   .pre-line { white-space: pre-line; }
 
-  /* Tabbar */
+  /* Tabbar — 항상 absolute로 phone 바닥에 고정.
+     화면 전환 시 flex 레이아웃 변화에 의한 점프 방지. */
   .tabbar {
-    flex: 0 0 60px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     height: 60px;
     border-top: 1px solid var(--line);
     background: rgba(255,255,255,.96);
@@ -1115,7 +1130,8 @@
     display: flex;
     align-items: stretch;
     padding: 6px 8px 10px;
-    z-index: 10;
+    z-index: 25;
+    transition: background .25s ease, border-color .25s ease;
   }
   .tabbar.hide { display: none; }
   .tab {
@@ -1162,18 +1178,17 @@
   }
   .museum-frame.active { display: block; }
 
-  /* 대시보드 활성 시 phone 레이아웃 조정 — full-bleed 380px iframe을 위해 chrome 정리 */
-  .phone.is-dashboard .statusbar { display: none; }
+  /* 대시보드 활성 시 chrome 정리 — 레이아웃은 안 건드리고 visual만 처리.
+     statusbar/tabbar 둘 다 항상 absolute라 점프 없음. */
+  .phone.is-dashboard .statusbar { opacity: 0; }
   .phone.is-dashboard .tabbar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 30;
-    background: rgba(255,255,255,.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-top: 0;
+    pointer-events: none;
   }
+  .phone.is-dashboard .tabbar .tab { pointer-events: auto; background: transparent; }
   .museum-theme-pill {
     position: absolute;
     top: 12px;
@@ -1182,6 +1197,60 @@
     background: rgba(255,255,255,.85);
     backdrop-filter: blur(6px);
     box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+
+  /* 솔루션 카드 오버레이 — iframe 내 카테고리 카드를 대체.
+     원본 카드 디자인(#f5efe8 배경 · name 13px · score 26px)을 그대로 따른다.
+     모든 카드 동일 색·폰트, NEW/완료는 작은 태그로만 구분. */
+  .solution-cards {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 60px;
+    height: 220px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    padding: 0 24px;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .scard {
+    pointer-events: auto;
+    background: #f5efe8;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+  }
+  .scard .s-name {
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .scard .s-score {
+    font-size: 26px;
+    color: #7d7169;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .scard .tag-mini {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(125,113,105,.14);
+    color: #7d7169;
+    letter-spacing: .5px;
+    line-height: 1.4;
   }
 
   /* Legacy dashboard styles (kept for reference, not used in current layout) */
@@ -1447,6 +1516,7 @@
             <span class="theme-name" id="theme-name">Slow Museum</span>
             <span style="font-size:10px;opacity:.6">↻</span>
           </button>
+          <div class="solution-cards" id="solution-cards"></div>
         </div>
       </section>
 
@@ -2324,85 +2394,45 @@ const THEMES = [
   { id: 'marble', ico: '🌀', name: 'Wellness Marble' },
 ];
 
-/* 더미 존 데이터 — A/B/완료 솔루션은 시연용 고정. 신규 존은 STATE.plan + STATE.rewards 기반. */
-function buildZones() {
+/* 솔루션 카드 4종 — 2x2 그리드.
+   1x1: NEW + (또는 STATE.plan 존재 시 사용자 솔루션)
+   1x2 / 2x1: 기존 진행 중 솔루션 (더미 데이터)
+   2x2: 종료된 솔루션 (그레이아웃) */
+function buildSolutionCards() {
   return [
-    { id: 'new', kind: 'new' },
-    { id: 'a', kind: 'active', title: '아침 5분 정원', score: 78, rewards: ['아테나','다비드','니케','아르테미스','헤르메스'] },
-    { id: 'b', kind: 'active', title: '밤 11시 잠들기', score: 65, rewards: ['비너스','포세이돈','아폴로'] },
-    { id: 'done', kind: 'done', title: '14일 새벽 루틴', score: 92, rewards: ['디스코볼로스','라오콘','페르세우스','브루투스','율리우스 카이사르','마르쿠스 아우렐리우스','나폴레옹','잔다르크','모세','생각하는 사람'] },
+    { kind: 'new' },
+    { kind: 'active', title: '아침 5분 정원', score: 78 },
+    { kind: 'active', title: '밤 11시 잠들기', score: 65 },
+    { kind: 'done',   title: '14일 새벽 루틴', score: 92 },
   ];
 }
 
-function rewardArtFor(name) {
-  return SCULPTURES.find(s => s.name === name)?.art || '·';
-}
-
 function renderDashboard() {
-  // Museum iframe 사이즈 보정 — 컨테이너 높이에 맞춰 scale 조절
   fitMuseumFrames();
-  // (legacy zone grid 로직은 더 이상 사용 안 함)
-  const grid = document.getElementById('zones-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  const zones = buildZones();
-  const newRewardName = STATE.newReward?.name;
-
-  zones.forEach(z => {
+  const wrap = document.getElementById('solution-cards');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  buildSolutionCards().forEach(c => {
     const el = document.createElement('div');
-    el.className = 'zone';
-    if (z.kind === 'new') {
-      if (!STATE.plan) {
-        el.classList.add('zone-new');
-        el.innerHTML = `
-          <span class="new-tag">NEW</span>
-          <div class="plus-circle">＋</div>
-          <div class="cta-label">나만의 솔루션<br/>만들기</div>
-        `;
+    el.className = 'scard';
+    if (c.kind === 'new') {
+      if (STATE.plan) {
+        const d = daysBetween(TODAY, new Date(STATE.plan.target_date));
+        el.innerHTML = `<div class="s-name">${STATE.plan.goal.delta_weight}kg 가벼워지기</div><div class="s-score">D-${d}</div>`;
+      } else {
+        el.innerHTML = `<div class="s-name"><span class="tag-mini">NEW</span></div><div class="s-score">＋</div>`;
         el.addEventListener('click', () => {
           startChat();
           goScreen('screen-chat');
         });
-      } else {
-        el.classList.add('zone-mine');
-        const myRewards = STATE.rewards.map(r => r.name);
-        el.innerHTML = `
-          <div class="zone-title">${STATE.plan.goal.delta_weight}kg 가벼워지기</div>
-          <div class="zone-score">${STATE.plan.target_event} · <strong>D-${daysBetween(TODAY, new Date(STATE.plan.target_date))}</strong></div>
-          <div class="zone-rewards">${slotsHTML(myRewards, 8, newRewardName)}</div>
-        `;
       }
-    } else if (z.kind === 'done') {
-      el.classList.add('zone-done');
-      el.innerHTML = `
-        <span class="complete-badge">완료</span>
-        <div class="zone-title">${z.title}</div>
-        <div class="zone-score">최종 <strong>${z.score}%</strong></div>
-        <div class="zone-rewards">${slotsHTML(z.rewards, 8)}</div>
-      `;
+    } else if (c.kind === 'done') {
+      el.innerHTML = `<div class="s-name"><span class="tag-mini">완료</span>${c.title}</div><div class="s-score">${c.score}</div>`;
     } else {
-      el.innerHTML = `
-        <div class="zone-title">${z.title}</div>
-        <div class="zone-score">이행 <strong>${z.score}%</strong></div>
-        <div class="zone-rewards">${slotsHTML(z.rewards, 8)}</div>
-      `;
+      el.innerHTML = `<div class="s-name">${c.title}</div><div class="s-score">${c.score}</div>`;
     }
-    grid.appendChild(el);
+    wrap.appendChild(el);
   });
-}
-
-function slotsHTML(rewardNames, slots, newName) {
-  const out = [];
-  for (let i = 0; i < slots; i++) {
-    const n = rewardNames[i];
-    if (n) {
-      const cls = (n === newName) ? 'zr-slot new' : 'zr-slot';
-      out.push(`<div class="${cls}">${rewardArtFor(n)}</div>`);
-    } else {
-      out.push(`<div class="zr-slot empty">·</div>`);
-    }
-  }
-  return out.join('');
 }
 
 /* Museum iframes: 360x780 native. 대시보드 활성 시 phone에 .is-dashboard 클래스로
@@ -2418,6 +2448,8 @@ const FRAME_INJECT_CSS = `
          justify-content: flex-start !important; align-items: flex-start !important; }
   #sliders, .control-panel, #control-panel, #controls,
   aside, .sliders, .panel-right { display: none !important; }
+  /* 부모 페이지가 솔루션 카드를 오버레이로 그리므로 iframe 내 카테고리 카드는 숨김 */
+  #cards, .cards, .score-cards, .card-row { display: none !important; }
   #canvas-wrap, .phone, .mobile-frame { border-radius: 0 !important; box-shadow: none !important; }
 `;
 
@@ -2508,6 +2540,7 @@ try {
   Object.values(LS_KEYS).forEach(k => localStorage.removeItem(k));
 } catch(e) {}
 renderHome();
+renderDashboard();
 setupMuseumIframes();
 bindTabbar();
 </script>
