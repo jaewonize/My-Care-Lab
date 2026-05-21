@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wm",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "-l", "8139", "."],
+      "port": 8139
+    }
+  ]
+}

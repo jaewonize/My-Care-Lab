@@ -1,0 +1,6 @@
+.claude/settings.local.json
+.claude/serve.log
+.claude/optimize.log
+.claude/optimize_sculptures.sh
+.DS_Store
+Thumbs.db

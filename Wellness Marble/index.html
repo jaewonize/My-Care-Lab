@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Wellness Marble — Board</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body {
+  background: radial-gradient(circle at 50% 30%, #fffbf7 0%, #fcf2ea 88%);
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+  padding: 24px 32px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.3;
+}
+main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-20px);
+}
+#phone-title {
+  position: absolute;
+  top: 25px;
+  left: 33px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #ff9d6b;
+  letter-spacing: -0.01em;
+  z-index: 3;
+  pointer-events: none;
+}
+#canvas-wrap {
+  width: 360px; height: 780px;
+  background: #ffffff;
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  touch-action: none;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+canvas { display:block; cursor:grab; touch-action: none; }
+canvas:active { cursor:grabbing; }
+
+#cards {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 268px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 24px 28px;
+  background: transparent;
+  z-index: 2;
+  pointer-events: none;
+}
+.card {
+  background: #fff9f4;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card .name { font-size: 13px; color: #8a8078; font-weight: 600; }
+.card .score { font-size: 26px; color: #ff9d6b; font-weight: 700; line-height: 1.1; }
+
+#sliders {
+  width: 384px;
+  height: 780px;
+  background: #ffffff;
+  border-radius: 0 40px 40px 0;
+  padding: 90px 28px 28px 56px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 24px;
+  margin-left: -32px;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+#sliders h2 {
+  font-size: 16px;
+  color: #888;
+  font-weight: 500;
+  margin-top: 5px;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+.slider-row { display: flex; flex-direction: column; gap: 9px; }
+.slider-row .label-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 15px; color: #5a5048;
+}
+.slider-row .label { font-weight: 600; color: #5a5048; }
+.slider-row .value { font-variant-numeric: tabular-nums; color: #ff9d6b; font-size: 14px; font-weight: 700; }
+.slider-row input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 8px; border-radius: 4px;
+  background: #e0e0e0; outline: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #ff9d6b; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #ff9d6b; cursor: pointer; border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#submit-btn {
+  margin-top: 2px;
+  padding: 10px 32px;
+  border-radius: 999px;
+  background: #ff9d6b;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  border: none;
+  cursor: pointer;
+  align-self: center;
+  box-shadow: 0 4px 12px rgba(255, 157, 107, 0.45);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+}
+#submit-btn:hover { box-shadow: 0 6px 16px rgba(255, 157, 107, 0.55); }
+#submit-btn:active { transform: scale(0.97); }
+
+#triggers {
+  margin-top: -2px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#triggers h3 {
+  font-size: 16px;
+  color: #888;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+#trigger-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.trigger-btn {
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: transparent;
+  color: #ff9d6b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid #ff9d6b;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.trigger-btn:hover { background: rgba(255, 157, 107, 0.12); }
+.trigger-btn:active { transform: scale(0.97); }
+.trigger-row { display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<main>
+<div id="canvas-wrap">
+  <div id="phone-title">Wellness Marble</div>
+  <canvas id="board" width="360" height="780"></canvas>
+  <div id="cards">
+    <div class="card"><div class="name">잘 움직이기</div><div class="score" id="card-move">72</div></div>
+    <div class="card"><div class="name">잘 쉬기</div><div class="score" id="card-rest">60</div></div>
+    <div class="card"><div class="name">잘 가꾸기</div><div class="score" id="card-groom">48</div></div>
+    <div class="card"><div class="name">잘 다스리기</div><div class="score" id="card-manage">80</div></div>
+  </div>
+</div>
+
+<div id="sliders">
+  <h2>점수 컨트롤</h2>
+  <div class="slider-row">
+    <div class="label-row"><span class="label">잘 움직이기</span><span class="value" id="val-move">72</span></div>
+    <input type="range" min="0" max="100" value="72" id="slider-move">
+  </div>
+  <div class="slider-row">
+    <div class="label-row"><span class="label">잘 쉬기</span><span class="value" id="val-rest">60</span></div>
+    <input type="range" min="0" max="100" value="60" id="slider-rest">
+  </div>
+  <div class="slider-row">
+    <div class="label-row"><span class="label">잘 가꾸기</span><span class="value" id="val-groom">48</span></div>
+    <input type="range" min="0" max="100" value="48" id="slider-groom">
+  </div>
+  <div class="slider-row">
+    <div class="label-row"><span class="label">잘 다스리기</span><span class="value" id="val-manage">80</span></div>
+    <input type="range" min="0" max="100" value="80" id="slider-manage">
+  </div>
+  <button id="submit-btn">입력</button>
+  <div id="triggers">
+    <h3>트리거</h3>
+    <div id="trigger-buttons">
+      <button class="trigger-btn">100번째 방문</button>
+      <button class="trigger-btn">지난 한 달 간 미접속</button>
+      <button class="trigger-btn">이벤트</button>
+      <div class="trigger-row">
+        <button class="trigger-btn">동일연령 총점 평균보다 낮음</button>
+        <button class="trigger-btn">높음</button>
+      </div>
+      <button class="trigger-btn">잘 다스리기 20점 하락</button>
+    </div>
+  </div>
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="lib/meshopt_decoder.js"></script>
+<script src="lib/GLTFLoader.js"></script>
+<script>
+const W = 360, H = 780;
+const canvas = document.getElementById('board');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.VSMShadowMap;  // 부드럽고 자연스러운 소멸. 이정표는 셰도우 패스에서 별도 제외(아래 monkey-patch)
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.NoToneMapping;        // 필름 롤오프 제거 → 쨍한 화이트/채도
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffe7d6);   // 화면 배경 (table과 동일, 가장자리 보강용)
+
+// ─── 카테고리(변) 정의 — scores 키와 동일: move/rest/groom/manage ───
+const CAT = {
+  move:   { name:'활동의 광장', color:0xff6b3d, tiles:['활력','도약','생동','열정','질주','약진','비상'] },
+  rest:   { name:'안식의 섬',   color:0x12b5c9, tiles:['고요','여백','안온','노을','숨결','평온','여유'] },
+  groom:  { name:'미학의 거리', color:0xb145d8, tiles:['우아','색채','감각','섬세','멋','결','빛'] },
+  manage: { name:'사색의 언덕', color:0x36c25b, tiles:['침묵','통찰','내면','균형','사유','명상','깨달음'] },
+};
+const CORNERS = {
+  start:  { name:'START',   sub:'주간 정산', color:0xffce2e },
+  golden: { name:'황금열쇠', sub:'EVENT',     color:0xffb300 },
+  clock:  { name:'이정표',   sub:'카테고리',  color:0x7e93ac },
+  island: { name:'무인도',   sub:'OFFLINE',   color:0xe6a85a },
+};
+
+// ─── 보드 치수 ───
+const C  = 2.3;                    // 모서리(정사각형) 한 변
+const TW = 1.55;                   // 변 타일 폭(둘레 방향)
+const TD = 2.3;                    // 타일 깊이(반경 방향) — 모서리와 동일해 띠 폭 균일
+const SLAB_H = 0.30;               // 타일 두께
+const NSIDE = 7;
+const SIDE_RUN = NSIDE * TW;       // 한 변의 타일 구간 길이
+const R = SIDE_RUN / 2 + C / 2;    // 중심축에서 띠 중심선까지 거리
+const TOP_Y = SLAB_H;              // 타일 윗면 y
+
+// ─── 보드 받침대(베이지 보더) + 테이블 ───
+const OUTER = R + TD / 2;
+// 절차적 나무결 텍스처 (단일 HTML — 외부 이미지 없이 캔버스로 생성)
+function makeWoodTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 1024;
+  const x = c.getContext('2d');
+  const CW = 1024, CH = 1024;
+  x.fillStyle = '#c99e66'; x.fillRect(0, 0, CW, CH);
+  const planks = 6, ph = CH / planks;
+  const tones = ['#d3aa74', '#cea16b', '#d6ae78', '#cfa570', '#d1a872', '#cca36c'];
+  for (let p = 0; p < planks; p++) {
+    const y0 = p * ph;
+    x.fillStyle = tones[p % tones.length];
+    x.fillRect(0, y0, CW, ph);
+    for (let i = 0; i < 46; i++) {                 // 물결치는 나뭇결
+      const ly = y0 + (i / 46) * ph + (Math.random() - 0.5) * 3;
+      const dark = Math.random() < 0.5;
+      x.strokeStyle = dark ? 'rgba(60,38,18,0.10)' : 'rgba(225,190,150,0.08)';
+      x.lineWidth = dark ? 1.6 : 1.0;
+      const amp = 4 + Math.random() * 10, off = Math.random() * Math.PI * 2,
+            freq = 0.006 + Math.random() * 0.01;
+      x.beginPath(); x.moveTo(0, ly);
+      for (let xx = 0; xx <= CW; xx += 16)
+        x.lineTo(xx, ly + Math.sin(xx * freq + off) * amp * 0.15);
+      x.stroke();
+    }
+    if (Math.random() < 0.4) {                      // 옹이 — 아주 은은하게만
+      const kx = Math.random() * CW, ky = y0 + ph * (0.3 + Math.random() * 0.4),
+            kr = 4 + Math.random() * 5;
+      const g = x.createRadialGradient(kx, ky, 1, kx, ky, kr);
+      g.addColorStop(0, 'rgba(96,66,34,0.14)'); g.addColorStop(1, 'rgba(96,66,34,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(kx, ky, kr, 0, Math.PI * 2); x.fill();
+    }
+    x.fillStyle = 'rgba(38,22,9,0.45)';             // 판자 경계 홈
+    x.fillRect(0, y0, CW, 2);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.encoding = THREE.sRGBEncoding;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  return t;
+}
+const baseMat = new THREE.MeshStandardMaterial({ map: makeWoodTexture(), roughness: 0.6, metalness: 0.04 });
+const base = new THREE.Mesh(new THREE.BoxGeometry(OUTER * 2 + 1.1, 0.5, OUTER * 2 + 1.1), baseMat);
+base.position.y = -0.25;
+base.receiveShadow = true;
+base.castShadow = true;            // 나무판 → 바닥 태양 그림자 ON
+scene.add(base);
+
+// 무조명·톤매핑 제외 → 조명에 채도가 안 깎이고 지정 색 그대로 나옴
+const tableMat = new THREE.MeshBasicMaterial({ color: 0xffe7d6, toneMapped: false });
+tableMat.color.convertSRGBToLinear();              // sRGB 스와치 그대로 표시
+const table = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), tableMat);
+table.rotation.x = -Math.PI / 2;
+table.position.y = -0.5;
+scene.add(table);
+
+// 배경(무조명 table)은 그림자를 못 받음 → 투명 ShadowMaterial 캐처를 깔아
+// 나무판/보드 그림자가 배경 위에 은은하게 떨어지게 함.
+const shadowCatcher = new THREE.Mesh(
+  new THREE.PlaneGeometry(120, 120),
+  new THREE.ShadowMaterial({ opacity: 0.26 })   // 접지부는 진하게(강한 접지 라인), 끝은 블러로 자연 소멸
+);
+shadowCatcher.rotation.x = -Math.PI / 2;
+shadowCatcher.position.y = -0.498;
+shadowCatcher.receiveShadow = true;
+scene.add(shadowCatcher);
+
+// ─── 중앙 함몰부 + 로고 ───
+const innerHalf = R - TD / 2;
+function makeLogoTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const x = c.getContext('2d');
+  x.fillStyle = '#cdbfa3'; x.fillRect(0, 0, 512, 512);
+  x.translate(256, 256); x.rotate(-Math.PI / 4);
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.lineJoin = 'round'; x.miterLimit = 2;
+  // 두 줄 · 줄간격 띄움 · 한 덩어리 테두리(패스 분리: 드롭 → 외곽선 전부 → 필 → 하이라이트)
+  const WORDS = [['웰니스', -33, 50], ['마블', 31, 70]];
+  const setF = s => x.font = `900 ${s}px "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif`;
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  WORDS.forEach(([t, cy, s]) => {                    // 드롭 오프셋
+    setF(s); x.fillStyle = 'rgba(74,46,20,0.26)'; x.fillText(t, 5, cy + 6);
+  });
+  WORDS.forEach(([t, cy, s]) => {                    // 진한 외곽선(합쳐짐)
+    setF(s); x.lineWidth = s * 0.32; x.strokeStyle = '#5a3a1f'; x.strokeText(t, 0, cy);
+  });
+  WORDS.forEach(([t, cy, s]) => {                    // 골드 그라데이션 필
+    setF(s);
+    const g = x.createLinearGradient(0, cy - s * 0.55, 0, cy + s * 0.55);
+    g.addColorStop(0, '#ffd64b'); g.addColorStop(1, '#ff9e2e');
+    x.fillStyle = g; x.fillText(t, 0, cy);
+  });
+  WORDS.forEach(([t, cy, s]) => {                    // 안쪽 밝은 하이라이트(가늘게)
+    setF(s); x.lineWidth = s * 0.045; x.strokeStyle = 'rgba(255,242,207,0.7)';
+    x.strokeText(t, 0, cy);
+  });
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+const innerFloor = new THREE.Mesh(
+  new THREE.BoxGeometry(innerHalf * 2, 0.18, innerHalf * 2),
+  new THREE.MeshStandardMaterial({ map: makeLogoTexture(), roughness: 0.9 })
+);
+innerFloor.position.y = 0.09;
+innerFloor.receiveShadow = true;
+scene.add(innerFloor);
+
+// ─── 타일 라벨 텍스처 (한글) ───
+// 변 타일: 안쪽(중심) 가장자리에 카테고리 색 띠 + 이름.
+function tileTexture(label, zoneHex, sub) {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#f7f2ea'; x.fillRect(0, 0, 256, 256);
+  if (zoneHex != null) {
+    x.fillStyle = '#' + zoneHex.toString(16).padStart(6, '0');
+    x.fillRect(0, 0, 256, 62);                 // 상단 색 띠 (보드 안쪽을 향함)
+  }
+  x.fillStyle = '#5b524a';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.font = '700 50px -apple-system, "Segoe UI", sans-serif';
+  x.fillText(label, 128, 150);
+  if (sub) {
+    x.fillStyle = '#8a8075';
+    x.font = '600 26px -apple-system, "Segoe UI", sans-serif';
+    x.fillText(sub, 128, 205);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+// ─── 라운드 사각형 타일 ───
+const TILE_R = 0.2;                                 // 코너 라운드 반경
+const TILE_GAP = 0.08;                              // 칸 사이 틈(그라우트) — 클수록 경계 또렷
+function roundedRectShape(w, d, r) {
+  const s = new THREE.Shape();
+  const hw = w / 2, hd = d / 2;
+  s.moveTo(-hw + r, -hd);
+  s.lineTo(hw - r, -hd);
+  s.quadraticCurveTo(hw, -hd, hw, -hd + r);
+  s.lineTo(hw, hd - r);
+  s.quadraticCurveTo(hw, hd, hw - r, hd);
+  s.lineTo(-hw + r, hd);
+  s.quadraticCurveTo(-hw, hd, -hw, hd - r);
+  s.lineTo(-hw, -hd + r);
+  s.quadraticCurveTo(-hw, -hd, -hw + r, -hd);
+  return s;
+}
+// 몸체: 라운드 사각형을 두께만큼 압출 → 눕혀서 y 0..SLAB_H
+function tileBodyGeo(w, d, r) {
+  const g = new THREE.ExtrudeGeometry(roundedRectShape(w, d, r),
+    { depth: SLAB_H, bevelEnabled: false, curveSegments: 6 });
+  g.rotateX(-Math.PI / 2);
+  return g;
+}
+// 라벨: 같은 라운드 형상 캡을 윗면에 살짝 띄움 (압출 UV 회피, 텍스처는 bbox 기준 0..1)
+function labelMesh(w, d, r, tex, labelYaw) {
+  const g = new THREE.ShapeGeometry(roundedRectShape(w, d, r), 6);
+  g.computeBoundingBox();
+  const bb = g.boundingBox, ux = bb.max.x - bb.min.x, uy = bb.max.y - bb.min.y;
+  const pos = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < pos.count; i++)
+    uv.setXY(i, (pos.getX(i) - bb.min.x) / ux, (pos.getY(i) - bb.min.y) / uy);
+  uv.needsUpdate = true;
+  g.rotateX(-Math.PI / 2);
+  // 변/모서리마다 글자가 보드 바깥에서 읽히도록 텍스처를 회전.
+  tex.center.set(0.5, 0.5);
+  tex.rotation = labelYaw;
+  tex.needsUpdate = true;
+  const m = new THREE.Mesh(g,
+    new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7, side: THREE.DoubleSide }));
+  m.position.y = SLAB_H + 0.004;
+  m.receiveShadow = true;
+  return m;
+}
+
+// ─── 보드 칸 생성 (시계방향: start → move7 → golden → rest7 → clock → groom7 → island → manage7) ───
+const tilesInOrder = [];   // 타일 윗면 중심
+const tileBand = [];       // 타일별 '컬러 띠가 있는 쪽' 단위벡터 (라벨 회전 기준)
+const slabMeshes = [];
+const TOKEN_RADIAL  = TD * 0.26;   // 말: 흰 영역(띠 반대쪽)으로
+const REWARD_RADIAL = TD * 0.24;   // 보상: 컬러 띠 쪽(타일 위쪽)으로
+
+function addTile(cx, cz, sx, sz, tex, bodyHex, labelYaw) {
+  const w = sx - TILE_GAP, d = sz - TILE_GAP;       // 셀보다 살짝 작게 → 사이 틈
+  const r = Math.min(TILE_R, Math.min(w, d) / 2 - 0.02);
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(tileBodyGeo(w, d, r),
+    new THREE.MeshStandardMaterial({ color: bodyHex, roughness: 0.8 }));
+  body.castShadow = true; body.receiveShadow = true;
+  g.add(body);
+  g.add(labelMesh(w, d, r, tex, labelYaw));
+  g.position.set(cx, 0, cz);
+  scene.add(g);
+  slabMeshes.push(body);
+  tilesInOrder.push(new THREE.Vector3(cx, TOP_Y, cz));
+  // 컬러 띠 방향 = 라벨 텍스처 회전(labelYaw)으로 결정 (기하 안/밖 아님)
+  tileBand.push(new THREE.Vector3(-Math.sin(labelYaw), 0, -Math.cos(labelYaw)));
+  return g;
+}
+
+// 모서리 4개 좌표 (시계방향). start=앞(+x,+z) → 기본 카메라에서 화면 하단.
+const cornerPos = {
+  start:  [ +R, +R ],
+  golden: [ -R, +R ],
+  clock:  [ -R, -R ],
+  island: [ +R, -R ],
+};
+// 변별 라벨 회전(기본 방위각 기준, 보드 바깥에서 읽히도록). 손쉽게 조정 가능.
+const EDGE_YAW = { move: 0, rest: Math.PI / 2, groom: 0, manage: Math.PI / 2 };
+const CORNER_YAW = { start: 0, golden: Math.PI / 2, clock: 0, island: Math.PI / 2 };
+
+function addCorner(key) {
+  const [cx, cz] = cornerPos[key];
+  const cdef = CORNERS[key];
+  const tex = tileTexture(cdef.name, null, cdef.sub);   // 코너는 색 띠 없음
+  addTile(cx, cz, C, C, tex, 0xece4d6, CORNER_YAW[key]);
+}
+
+// 변: A 모서리 → B 모서리 사이에 7칸. 축 정렬이라 가로/세로만 판별.
+function addSide(catKey, aKey, bKey) {
+  const cat = CAT[catKey];
+  const [ax, az] = cornerPos[aKey];
+  const [bx, bz] = cornerPos[bKey];
+  const horiz = az === bz;                       // z 고정이면 가로변(x 변화)
+  const dir = horiz ? Math.sign(bx - ax) : Math.sign(bz - az);
+  const s0 = C / 2 + TW / 2;                      // 모서리 중심에서 첫 타일 중심까지
+  for (let i = 0; i < NSIDE; i++) {
+    const off = s0 + i * TW;
+    const cx = horiz ? ax + dir * off : ax;
+    const cz = horiz ? az : az + dir * off;
+    const sx = horiz ? TW : TD;
+    const sz = horiz ? TD : TW;
+    const tex = tileTexture(cat.tiles[i], cat.color, null);
+    addTile(cx, cz, sx, sz, tex, 0xf2ece1, EDGE_YAW[catKey]);
+  }
+}
+
+addCorner('start');
+addSide('move',   'start',  'golden');
+addCorner('golden');
+addSide('rest',   'golden', 'clock');
+addCorner('clock');
+addSide('groom',  'clock',  'island');
+addCorner('island');
+addSide('manage', 'island', 'start');
+
+// ─── 시계탑 모서리: 이정표(마일스톤) 표지판 ───
+(function milestone() {
+  const [cx, cz] = cornerPos.clock;
+  const g = new THREE.Group();
+  const POST = 0xdf8f3c, ORANGE = 0xec9a3f;
+  const postH = 2.75;
+  const post = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.14, postH, 20),
+    new THREE.MeshStandardMaterial({ color: POST, roughness: 0.7 })
+  );
+  post.position.y = TOP_Y + postH / 2;
+  g.add(post);
+  const ball = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, 22, 18),
+    new THREE.MeshStandardMaterial({ color: ORANGE, roughness: 0.55 })
+  );
+  ball.position.y = TOP_Y + postH + 0.13;
+  g.add(ball);
+  // 화살표 사인: 읽는 면이 항상 카메라 쪽을 향하고, 보드 길이 중심을 폴 축
+  // 위로 옮겨 폴대가 각 화살표 '뒷면 중앙'에 오게.
+  const FRONT = new THREE.Vector3(1, 0, 1).normalize();  // 카메라(=(1,1,1)) 정면 수평
+  // 한글 라벨 텍스처 (투명 배경)
+  function signLabelTexture(label) {
+    // 고해상도 캔버스(줌인해도 경계 매끈) — 비율은 512:140 그대로 유지
+    const c = document.createElement('canvas'); c.width = 1536; c.height = 420;
+    const x = c.getContext('2d');
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '800 246px "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+    x.fillStyle = 'rgba(0,0,0,0.2)';       // 투명도 80% (= opacity 0.2)
+    x.fillText(label, 768, 216);
+    const t = new THREE.CanvasTexture(c);
+    t.encoding = THREE.sRGBEncoding;
+    t.generateMipmaps = false;             // 밉맵 평균으로 생기는 글자 둘레 헤일로 방지
+    t.minFilter = THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return t;
+  }
+  function sign(W, H, color, y, yaw, label) {
+    const x0 = -0.04, x1 = W - H * 0.55;   // 안쪽 끝이 폴에 살짝 겹쳐 이음새 가림
+    const s = new THREE.Shape();
+    s.moveTo(x0, H / 2);
+    s.lineTo(x1, H / 2);
+    s.lineTo(W, 0);
+    s.lineTo(x1, -H / 2);
+    s.lineTo(x0, -H / 2);
+    s.lineTo(x0, H / 2);
+    const D = 0.14;                        // 얇게
+    const geo = new THREE.ExtrudeGeometry(s, {
+      depth: D, bevelEnabled: true,
+      bevelThickness: 0.022, bevelSize: 0.022, bevelSegments: 2, curveSegments: 2
+    });
+    const mid = (x0 + W) / 2;              // 길이 방향 중심
+    geo.translate(-mid, 0, -D / 2);        // 보드 중심을 폴 축 위로 + 두께 중앙
+    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.55 }));
+    m.position.set(0, TOP_Y + y, 0);
+    m.rotation.y = yaw;
+    // 읽는 면이 카메라 반대면 X축 180° 뒤집기. 뒷면을 폴 축(중앙)에 접지.
+    const n = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+    const dir = n.dot(FRONT) < 0 ? -1 : 1;
+    if (dir < 0) m.rotateX(Math.PI);
+    m.position.addScaledVector(n, dir * (D / 2));
+    // 라벨: 읽는 면(+Z)에 자식 평면. 플립된 사인은 z축 180°로 글자 정립.
+    if (label) {
+      const th = H * 0.66, tw = th * (512 / 140);   // 글자 크게
+      const tp = new THREE.Mesh(
+        new THREE.PlaneGeometry(tw, th),
+        new THREE.MeshBasicMaterial({ map: signLabelTexture(label), transparent: true, toneMapped: false })
+      );
+      tp.position.set(0, 0, D / 2 + 0.03);   // 베벨(0.022) 밖으로 → 안 묻힘
+      if (dir < 0) tp.rotation.z = Math.PI;
+      m.add(tp);
+    }
+    g.add(m);
+    return m;
+  }
+  // 색깔별 같은 평면(동일 yaw): 주황 ↔ 흰색이 한 평면에서 좌/우 반대 방향
+  // 화살표 색 = 섹션 타일 색(CAT)을 흰색과 섞어 파스텔로 (타일은 그대로)
+  const pastel = (h, a = 0.55) => new THREE.Color(h).lerp(new THREE.Color(0xffffff), a);
+  const backSign   = sign(1.64, 0.52, pastel(CAT.manage.color), 2.32,  Math.PI / 4, '사색의 언덕');  // 1 녹색
+  const secondSign = sign(1.55, 0.50, pastel(CAT.move.color, 0.45), 1.78, -3 * Math.PI / 4, '활동의 광장'); // 2 오렌지
+  const thirdSign  = sign(1.64, 0.52, pastel(CAT.groom.color),  1.24,  Math.PI / 4, '미학의 거리');  // 3 보라
+  const bottomSign = sign(1.52, 0.50, pastel(CAT.rest.color),   0.74, -3 * Math.PI / 4, '휴식의 해변'); // 4 블루
+  // 맨 뒤쪽(최상단): 화면 우측 살짝 + 시계방향 5° + 화면쪽 0.1
+  backSign.position.addScaledVector(new THREE.Vector3(1, 0, -1).normalize(), 0.12);
+  backSign.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), -Math.PI / 36);
+  backSign.position.addScaledVector(FRONT, 0.1);
+  // 두 번째: 화면 좌측 0.3 + 반시계 7° + 화면(사용자) 쪽으로 0.2
+  secondSign.position.addScaledVector(new THREE.Vector3(-1, 0, 1).normalize(), 0.3);
+  secondSign.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 7 * Math.PI / 180);
+  secondSign.position.addScaledVector(FRONT, 0.1);
+  // 세 번째: 화면 우측 0.3 + 시계방향 7° + 화면(사용자) 쪽으로 0.2
+  thirdSign.position.addScaledVector(new THREE.Vector3(1, 0, -1).normalize(), 0.3);
+  thirdSign.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), -7 * Math.PI / 180);
+  thirdSign.position.addScaledVector(FRONT, 0.1);
+  // 맨 아래: 화면 좌측 0.12 + 반시계 5° + 화면쪽 0.1
+  bottomSign.position.addScaledVector(new THREE.Vector3(-1, 0, 1).normalize(), 0.12);
+  bottomSign.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), Math.PI / 36);
+  bottomSign.position.addScaledVector(FRONT, 0.1);
+  g.rotation.y = -Math.PI / 18;      // Top뷰 시계방향 10° (이정표 통째로)
+  const k = 0.78 / Math.SQRT2;       // 코너 바깥(외곽)으로 — 말 경로 회피
+  g.position.set(cx + Math.sign(cx) * k, 0, cz + Math.sign(cz) * k);
+  // 이정표: 긴 태양 그림자 X (castShadow=false) + 부드럽게 사라지는 발밑 그림자만
+  g.traverse(o => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = true; } });
+  (function () {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const c2 = cv.getContext('2d');
+    const gr = c2.createRadialGradient(128, 128, 4, 128, 128, 128);
+    gr.addColorStop(0,    'rgba(0,0,0,0.30)');
+    gr.addColorStop(0.35, 'rgba(0,0,0,0.16)');
+    gr.addColorStop(0.7,  'rgba(0,0,0,0.05)');
+    gr.addColorStop(1,    'rgba(0,0,0,0)');   // 가장자리로 blurry하게 소멸
+    c2.fillStyle = gr; c2.fillRect(0, 0, 256, 256);
+    const tx = new THREE.CanvasTexture(cv); tx.encoding = THREE.sRGBEncoding;
+    const blob = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.1, 1.1),
+      new THREE.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false })
+    );
+    blob.rotation.x = -Math.PI / 2;
+    blob.position.set(0, TOP_Y + 0.012, 0);
+    g.add(blob);
+  })();
+  scene.add(g);
+  window.__signpost = g;                  // 끝부분 안전 재확인용
+})();
+
+// ─── 공유 GLTFLoader (인스턴스 1개 + meshopt 디코더 설정 1회를 모든 GLB가 재사용) ───
+let __gltfLoader = null;
+function getGLTFLoader() {
+  if (__gltfLoader) return __gltfLoader;
+  if (typeof THREE.GLTFLoader !== 'function' || typeof MeshoptDecoder === 'undefined') return null;
+  __gltfLoader = new THREE.GLTFLoader();
+  __gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+  return __gltfLoader;
+}
+
+// ─── 무인도 모서리: 야자수 GLB ───
+(function island() {
+  const [cx, cz] = cornerPos.island;
+  const k = 0.78 / Math.SQRT2;       // 코너 바깥(외곽)으로 — 말 경로 회피
+  const g = new THREE.Group();
+  g.position.set(cx + Math.sign(cx) * k, TOP_Y, cz + Math.sign(cz) * k);
+  scene.add(g);
+  const loader = getGLTFLoader();
+  if (!loader) {
+    console.warn('[island] 로더 미로딩 — 야자수 스킵');
+    return;
+  }
+  const PALM_SIZE = 1.8;             // 야자수 최대변 목표 크기
+  loader.load('asset/palm_pbr.glb', (gltf) => {
+    const o = gltf.scene;
+    // gltf.scene 루트 변환=단위 → 로컬=월드 AABB. 균일 스케일(원점 기준)이라
+    // 스케일 후 박스 = box*k. 전체 정점 재순회(setFromObject 2회) 불필요.
+    const box = new THREE.Box3().setFromObject(o);
+    const size = box.getSize(new THREE.Vector3());
+    const k = PALM_SIZE / Math.max(size.x, size.y, size.z);
+    o.scale.setScalar(k);
+    const c = box.getCenter(new THREE.Vector3()).multiplyScalar(k);
+    o.position.x -= c.x;
+    o.position.z -= c.z;
+    o.position.y -= box.min.y * k;   // 바닥을 g 원점(=타일 윗면)에
+    o.traverse(m => {
+      if (!m.isMesh) return;
+      m.castShadow = true; m.receiveShadow = true;
+      (Array.isArray(m.material) ? m.material : [m.material]).forEach(mat => {
+        if (mat && 'metalness' in mat) { mat.metalness = 0; mat.needsUpdate = true; }
+      });
+    });
+    g.add(o);
+    window.__palm = g;
+  }, undefined, (e) => console.error('[island] 야자수 실패', e));
+})();
+
+// ─── 황금열쇠 모서리: 카드 더미(? 박스) ───
+(function golden() {
+  const [cx, cz] = cornerPos.golden;
+  const deck = new THREE.Mesh(
+    new THREE.BoxGeometry(0.95, 0.5, 0.7),
+    new THREE.MeshStandardMaterial({ color: 0xf0c64e, roughness: 0.45, metalness: 0.15 })
+  );
+  const k = 0.78 / Math.SQRT2;       // 코너 바깥(외곽)으로 — 말 경로 회피
+  deck.position.set(cx + Math.sign(cx) * k, TOP_Y + 0.25, cz + Math.sign(cz) * k);
+  deck.rotation.y = Math.PI / 5;
+  deck.castShadow = true;
+  scene.add(deck);
+})();
+
+// ─── 보상 오브젝트 ───
+// 플레이스홀더 제거 → 스크립트 끝 loadRewards()에서 GLB 모델을 타일에 배치.
+// 타일 인덱스: 0=start, 1..7=move, 8=golden, 9..15=rest, 16=clock,
+//              17..23=groom, 24=island, 25..31=manage.
+const REWARD_MODELS = [
+  // 활동의 광장
+  { idx: 2,  url: 'asset/activity/train_pbr.glb', yaw: 90, b: 1.4 },  // 도약 (반시계 90°, 1.4배 밝게)
+  { idx: 4,  url: 'asset/activity/stadium_pbr.glb', b: 1.4 },  // 열정 (1.4배 밝게)
+  { idx: 6,  url: 'asset/activity/construction_pbr.glb', b: 1.4 },  // 약진 (1.4배 밝게)
+  // 휴식의 해변
+  { idx: 10, url: 'asset/restoration/rainbow_pbr.glb', dy: 0.3, hop: 0.07, hopHz: 0.7, spin: 18 },  // 여백 — 공중 부양 + hopping + Y축 회전
+
+  { idx: 13, url: 'asset/restoration/tetrafish_pbr.glb', sway: 5, swayHz: 0.25, dy: 0.06, hop: 0.06, hopHz: 0.467 },  // 숨결 (테트라피쉬, ±5° 왕복 + 위아래 hopping 1.5배 느리게)
+  { idx: 14, url: 'asset/restoration/diver_pbr.glb', sway: -5, swayHz: 0.25, dy: 0.06, hop: -0.06, hopHz: 0.467 },  // 평온 (다이버, 테트라피쉬와 동일 움직임·역위상, hopping 1.5배 느리게)
+  // 미학의 거리
+  { idx: 18, url: 'asset/appearance/cherryblossom_pbr.glb', b: 1.4 }, // 색채 (벚나무, 1.4배 밝게)
+  { idx: 19, url: 'asset/appearance/effel_tower_pbr.glb', s: 1.44 }, // 감각 (1.2×1.2 = 1.44배 확대)
+  { idx: 20, url: 'asset/appearance/cherryblossom_pbr.glb', b: 1.4 }, // 섬세 (벚나무, 1.4배 밝게)
+  { idx: 21, url: 'asset/appearance/art_park_pbr.glb', b: 1.4 }, // 멋 (1.4배 밝게)
+  // 사색의 언덕
+  { idx: 25, url: 'asset/mind/pagoda_pbr.glb', db: 0.2 },  // 침묵 (파고다)
+  { idx: 26, url: 'asset/mind/ankor_pbr.glb', yaw: 90, s: 1.1, db: -0.2 },  // 통찰 (반시계 90°, 1.1배, 타일 아래쪽으로 0.2)
+  { idx: 27, url: 'asset/mind/pagoda_pbr.glb', db: 0.2 },  // 내면 (리본 쪽으로 0.2 이동)
+  { idx: 30, url: 'asset/mind/stonhenge_pbr.glb', s: 1.2 },  // 명상 (1.2배 확대)
+];
+
+// ─── 토큰 = 자전거 GLB 2대 (PBR 선두 / SHADED 추격). 로드되면 할당 ───
+let bikeLead = null;
+
+
+// ─── 조명 ───
+scene.add(new THREE.AmbientLight(0xffffff, 0.34));
+const hemi = new THREE.HemisphereLight(0xfff3df, 0x70624b, 0.32);  // 원복 — 0.42는 왼쪽 타일 옆면 음영을 날려버림
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2dd, 0.95);
+sun.position.set(-15, 17, 12);        // 고도 — 그림자 길이와 윗면 톤 그라데이션 균형
+sun.castShadow = true;   // 태양 그림자 ON (이정표만 castShadow=false)
+sun.shadow.mapSize.set(4096, 4096);   // VSM 라이트블리드(긴 번짐 streak) 최소화 위해 고해상도
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 90;
+sun.shadow.camera.left = -26;         // 길어진 그림자가 잘리지 않게 확대
+sun.shadow.camera.right = 26;
+sun.shadow.camera.top = 26;
+sun.shadow.camera.bottom = -26;
+sun.shadow.bias = -0.0003;
+sun.shadow.normalBias = 0.02;     // 0에 가깝게 → 접지 그림자가 발밑에 붙음(피터패닝 방지)
+sun.shadow.radius = 20;           // 부드럽고 blurry하게 소멸 (접지 라인 강화는 캐처 농도/보강광으로 분리 제어)
+const sunTarget = new THREE.Object3D();
+scene.add(sunTarget);
+sun.target = sunTarget;
+scene.add(sun);
+
+// ─── 아이소메트릭(직교) 카메라 — 회전 없음, 평행이동 + 줌만 ───
+const ASPECT = W / H;                                // 0.5 (포트레이트)
+const FRUST = 56;                                    // zoom=1에서 보이는 세로 월드 단위
+const camera = new THREE.OrthographicCamera(
+  -FRUST * ASPECT / 2, FRUST * ASPECT / 2, FRUST / 2, -FRUST / 2, -200, 400
+);
+camera.zoom = 1.8221;
+const VIEW_DIR = new THREE.Vector3(1, 1, 1).normalize();   // 정아이소 (35.26°)
+const CAM_DIST = 120;
+const look = new THREE.Vector3(-2.615, 1.257, 1.658);
+const INIT_LOOK = look.clone();
+const INIT_ZOOM = camera.zoom;
+const _lookM = new THREE.Matrix4(), _UP = new THREE.Vector3(0, 1, 0);
+function quatLookingAt(pos, target) {
+  _lookM.lookAt(pos, target, _UP);
+  return new THREE.Quaternion().setFromRotationMatrix(_lookM);
+}
+function applyCam() {
+  camera.position.copy(look).addScaledVector(VIEW_DIR, CAM_DIST);
+  camera.quaternion.copy(quatLookingAt(camera.position, look));
+  camera.updateProjectionMatrix();
+}
+applyCam();
+// 하단 점수 카드(268px) 위로 보드를 끌어올리는 렌즈 시프트.
+camera.setViewOffset(W, H, 0, 110, W, H);
+
+// ─── 입력: 드래그 평행이동 · 휠/핀치 줌 (회전 없음) ───
+const pointers = new Map();
+const _rt = new THREE.Vector3(), _upv = new THREE.Vector3();
+let pinchD0 = 0, pinchZ0 = 1;
+let downX = 0, downY = 0, moved = 0, pinched = false;
+const CLICK_SLOP = 6;
+const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2();
+function resetView() {
+  look.copy(INIT_LOOK);
+  camera.zoom = INIT_ZOOM;
+  applyCam();
+}
+function panBy(dx, dy) {
+  camera.updateMatrixWorld();
+  _rt.setFromMatrixColumn(camera.matrixWorld, 0);    // 화면 우측 방향
+  _upv.setFromMatrixColumn(camera.matrixWorld, 1);   // 화면 상단 방향
+  const k = (FRUST / camera.zoom) / H;               // 픽셀당 월드 거리
+  look.addScaledVector(_rt, -dx * k);
+  look.addScaledVector(_upv, dy * k);
+  applyCam();
+}
+function setZoom(z) {
+  camera.zoom = Math.max(0.6, Math.min(8, z));
+  camera.updateProjectionMatrix();
+}
+function pinchDist() {
+  const p = [...pointers.values()];
+  return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
+}
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('pointerdown', e => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  canvas.setPointerCapture(e.pointerId);
+  if (pointers.size === 1) { downX = e.clientX; downY = e.clientY; moved = 0; pinched = false; }
+  else if (pointers.size === 2) { pinched = true; pinchD0 = pinchDist(); pinchZ0 = camera.zoom; }
+});
+window.addEventListener('pointermove', e => {
+  const p = pointers.get(e.pointerId);
+  if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY;
+  moved += Math.abs(dx) + Math.abs(dy);
+  if (pointers.size >= 2) {
+    setZoom(pinchZ0 * pinchDist() / Math.max(1, pinchD0));
+  } else {
+    panBy(dx, dy);
+  }
+});
+function pickBoard(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  _ndc.x = ((clientX - r.left) / r.width) * 2 - 1;
+  _ndc.y = -((clientY - r.top) / r.height) * 2 + 1;
+  _ray.setFromCamera(_ndc, camera);
+  return _ray.intersectObject(base, false).length > 0;   // 보드 footprint = base
+}
+function endPointer(e) {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  if (pointers.size > 0) return;                  // 아직 손가락 남아있음
+  if (!pinched && moved <= CLICK_SLOP) {          // 드래그/핀치 아닌 단순 탭
+    const cx = e.clientX === undefined ? downX : e.clientX;
+    const cy = e.clientY === undefined ? downY : e.clientY;
+    if (!pickBoard(cx, cy)) resetView();          // 보드 밖 여백 클릭 → 초기 앵글 복귀
+  }
+}
+window.addEventListener('pointerup', endPointer);
+window.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  setZoom(camera.zoom * Math.exp(-e.deltaY * 0.0015));
+}, { passive: false });
+
+// ─── 말 순환 (저속노화 미연동 — 기본 느낌만, 일정 속도) ───
+const N = tilesInOrder.length;
+// 말 경로 = 타일 중심을 흰 영역(띠 반대쪽)으로 이동 → 보상과 충돌 회피
+const tokenPath = tilesInOrder.map((p, i) => p.clone().addScaledVector(tileBand[i], -TOKEN_RADIAL));
+// 코너 칸(0,8,16,24): 양옆 변 차선 직선의 '교점'으로 → 코너 진입 즉시
+// 타이트하게 턴. 바깥(장식물)·안쪽(센터) 어느 쪽도 과침투 안 함.
+for (let i = 0; i < N; i++) {
+  if (i % (NSIDE + 1) !== 0) continue;
+  const A = tokenPath[(i - 1 + N) % N], A0 = tokenPath[(i - 2 + N) % N];
+  const B = tokenPath[(i + 1) % N],     B1 = tokenPath[(i + 2) % N];
+  const d1x = A.x - A0.x, d1z = A.z - A0.z;        // 진입 변 방향
+  const d2x = B1.x - B.x, d2z = B1.z - B.z;        // 진출 변 방향
+  const den = d1x * d2z - d1z * d2x;
+  if (Math.abs(den) < 1e-6) continue;              // 평행이면 그대로
+  const s = ((B.x - A.x) * d2z - (B.z - A.z) * d2x) / den;
+  tokenPath[i].set(A.x + d1x * s, tilesInOrder[i].y, A.z + d1z * s);
+}
+const SEC_PER_TILE = 1.5;        // 한 칸 시간 → 한 바퀴 = N*이 값
+const BIKE_YAW = 0;              // 모델 정면 보정(필요시 조정)
+// 매끄러운 폐곡선 (centripetal Catmull-Rom) → 세그먼트/코너 비틀거림 제거
+const track = new THREE.CatmullRomCurve3(tokenPath, true, 'centripetal');
+const LAP_SEC = N * SEC_PER_TILE;
+let u = 0;
+const _pos = new THREE.Vector3(), _tan = new THREE.Vector3();
+function updateToken(dt) {
+  u = (u + dt / LAP_SEC) % 1;
+  if (!bikeLead) return;
+  track.getPointAt(u, _pos);
+  track.getTangentAt(u, _tan);
+  bikeLead.position.set(_pos.x, TOP_Y, _pos.z);
+  bikeLead.rotation.y = Math.atan2(_tan.x, _tan.z) + BIKE_YAW;
+}
+
+// ─── 이정표 셰도우 제외 ───
+// VSM은 라이트블리드 특성상 castShadow=false를 무시할 수 있다.
+// 셰도우(깊이) 패스 동안만 이정표를 숨겨 셰도우맵에서 물리적으로 제외 →
+// 본 컬러 렌더에는 그대로 보이고, 발밑 블롭만 접지 그림자로 남는다.
+const _shadowRender = renderer.shadowMap.render.bind(renderer.shadowMap);
+renderer.shadowMap.render = function (lights, scn, cam) {
+  const sp = window.__signpost;
+  const had = sp ? sp.visible : undefined;
+  if (sp) sp.visible = false;
+  _shadowRender(lights, scn, cam);
+  if (sp) sp.visible = had;
+};
+
+// ─── 렌더 루프 ───
+let _last = performance.now();
+function animate() {
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  const dt = Math.min((now - _last) / 1000, 0.05);
+  _last = now;
+  updateToken(dt);
+  if (window.__rewards) {
+    for (const r of window.__rewards) {
+      if (!r.hop && !r.spinW && !r.swayAmp) continue;
+      r.t += dt;
+      if (r.hop) r.obj.position.y = r.baseY + r.hop * Math.sin(r.t * r.hopW);
+      if (r.spinW || r.swayAmp)
+        r.obj.rotation.y = r.baseYaw + r.t * r.spinW + r.swayAmp * Math.sin(r.t * r.swayW);
+    }
+  }
+  renderer.render(scene, camera);
+}
+animate();
+
+// ─── 슬라이더: 값 표시 동기화 (Slow_Museum과 동일 흐름) ───
+// 현 단계는 컨트롤 미연동: 슬라이더/입력은 카드 숫자만 갱신, 보드 씬은 미반응.
+const sliderConfig = [
+  { id: 'move',   valueId: 'val-move',   cardId: 'card-move'   },
+  { id: 'rest',   valueId: 'val-rest',   cardId: 'card-rest'   },
+  { id: 'groom',  valueId: 'val-groom',  cardId: 'card-groom'  },
+  { id: 'manage', valueId: 'val-manage', cardId: 'card-manage' },
+];
+const scores = {};
+const cardEls = {};
+function paintSlider(slider) {
+  const v = parseInt(slider.value, 10);
+  slider.style.background =
+    `linear-gradient(to right, #ffcead 0%, #ffcead ${v}%, #e9e2d8 ${v}%, #e9e2d8 100%)`;
+}
+sliderConfig.forEach(({ id, valueId, cardId }) => {
+  const slider = document.getElementById('slider-' + id);
+  const valueLabel = document.getElementById(valueId);
+  cardEls[id] = document.getElementById(cardId);
+  scores[id] = parseInt(slider.value, 10);
+  paintSlider(slider);
+  slider.addEventListener('input', () => {
+    valueLabel.textContent = slider.value;
+    paintSlider(slider);
+  });
+});
+function applyScores() {
+  sliderConfig.forEach(({ id }) => {
+    const slider = document.getElementById('slider-' + id);
+    scores[id] = parseInt(slider.value, 10);
+    cardEls[id].textContent = scores[id];
+  });
+  onScoresApplied();
+}
+// TODO(다음 단계): 점수 → 말 속도 / 슬롯 잠금 / 보상 드랍 연동 지점.
+function onScoresApplied() {}
+document.getElementById('submit-btn').addEventListener('click', applyScores);
+
+window.__debug = { camera, scene, look, tilesInOrder };
+window.__scores = scores;
+
+// ─── 자전거 GLB (PBR vs SHADED 비교) — 코어 앱과 격리(로더 없으면 스킵) ───
+(function loadBikes() {
+  const gltfLoader = getGLTFLoader();
+  if (!gltfLoader) {
+    console.warn('[bikes] 로더 미로딩 — 스킵');
+    return;
+  }
+  try {
+    const BIKE_SIZE = 1.4;        // 최대변 목표 크기
+    const loadBike = (url, assign) => gltfLoader.load(url, (gltf) => {
+      const o = gltf.scene;
+      // 스케일 후 박스 = box*k (원점 기준 균일 스케일) → setFromObject 1회로 충분
+      const box = new THREE.Box3().setFromObject(o);
+      const size = box.getSize(new THREE.Vector3());
+      const k = BIKE_SIZE / Math.max(size.x, size.y, size.z);
+      o.scale.setScalar(k);
+      const c = box.getCenter(new THREE.Vector3()).multiplyScalar(k);
+      o.position.x -= c.x;                       // 접지중심을 피벗 원점에
+      o.position.z -= c.z;
+      o.position.y -= box.min.y * k;
+      o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+      const pivot = new THREE.Group();
+      pivot.add(o);                          // 자전거 태양 그림자 ON (VSM, 부드러움)
+      // 자전거 ↔ 보드 접지 그림자: VSM 블러와 별개의 진한 컨택트 타원.
+      // pivot의 자식이라 자전거 위치·진행방향 회전을 그대로 따라감.
+      (function () {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+        const c2 = cv.getContext('2d');
+        const gr = c2.createRadialGradient(128, 128, 2, 128, 128, 128);
+        gr.addColorStop(0,    'rgba(0,0,0,0.34)');   // 한 점에 안 뭉치게 완만한 코어
+        gr.addColorStop(0.3,  'rgba(0,0,0,0.26)');
+        gr.addColorStop(0.6,  'rgba(0,0,0,0.12)');
+        gr.addColorStop(0.85, 'rgba(0,0,0,0.03)');
+        gr.addColorStop(1,    'rgba(0,0,0,0)');      // 가장자리 blurry 소멸
+        c2.fillStyle = gr; c2.fillRect(0, 0, 256, 256);
+        const tx = new THREE.CanvasTexture(cv); tx.encoding = THREE.sRGBEncoding;
+        const blob = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.0, 2.6),         // 앞바퀴-뒷바퀴(진행) 축으로 길게 퍼진 타원
+          new THREE.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, toneMapped: false })
+        );
+        blob.rotation.x = -Math.PI / 2;
+        blob.position.set(0, 0.02, 0);               // 보드 윗면 바로 위(피벗 원점=접지중심)
+        pivot.add(blob);
+      })();
+      scene.add(pivot);
+      assign(pivot);
+      console.log('[bikes] 로드 OK', url);
+    }, undefined, (e) => console.error('[bikes] 실패', url, e));
+    loadBike('asset/bike/bike_pbr.opt.glb', p => { bikeLead = p; });   // PBR 단독
+  } catch (e) { console.error('[bikes] 예외', e); }
+})();
+
+// ─── 보상 GLB 배치 (REWARD_MODELS → 타일) ───
+(function loadRewards() {
+  const loader = getGLTFLoader();
+  if (!loader) {
+    console.warn('[rewards] 로더 미로딩 — 스킵');
+    return;
+  }
+  const REWARD_SIZE = 1.2;          // 모델 최대변 기준 크기(타일 위 일관 크기)
+  window.__rewards = [];
+  // 보상 오브젝트만 재질 튜닝(보드·자전거 영향 없음): metalness 제거 + 밝기·콘트라스트
+  function tuneMaterials(root, bright, contrast) {
+    root.traverse(m => {
+      if (!m.isMesh) return;
+      (Array.isArray(m.material) ? m.material : [m.material]).forEach(mat => {
+        if (!mat) return;
+        if ('metalness' in mat) mat.metalness = 0;
+        if (bright !== 1 && mat.color) mat.color.multiplyScalar(bright);   // 밝기(텍스처 포함 배율)
+        if (contrast !== 1) {                                              // 콘트라스트(최종 색 기준)
+          mat.onBeforeCompile = (sh) => {
+            sh.uniforms.uContrast = { value: contrast };
+            sh.fragmentShader = 'uniform float uContrast;\n' + sh.fragmentShader.replace(
+              '#include <dithering_fragment>',
+              'gl_FragColor.rgb=(gl_FragColor.rgb-0.5)*uContrast+0.5;\n#include <dithering_fragment>'
+            );
+          };
+          mat.customProgramCacheKey = () => 'k' + contrast;
+        }
+        mat.needsUpdate = true;
+      });
+    });
+  }
+  REWARD_MODELS.forEach((R) => {
+    const idx = R.idx;
+    const s = R.s ?? 1, dx = R.dx ?? 0, dy = R.dy ?? 0, dz = R.dz ?? 0;
+    const db = R.db ?? 0;            // 밴드축 오프셋(+ 타일 위쪽/띠 쪽, − 타일 아래쪽/길 쪽)
+    const yaw = (R.yaw ?? 0) * Math.PI / 180;        // 도 단위 입력
+    const bright = R.b ?? 1, contrast = R.k ?? 1;
+    const pos = tilesInOrder[idx], b = tileBand[idx];
+    loader.load(R.url, (gltf) => {
+      const o = gltf.scene;
+      // 스케일 후 박스 = box*k (원점 기준 균일 스케일) → setFromObject 1회로 충분
+      const box = new THREE.Box3().setFromObject(o);
+      const size = box.getSize(new THREE.Vector3());
+      const k = (REWARD_SIZE / Math.max(size.x, size.y, size.z)) * s;  // 타일별 크기 배율
+      o.scale.setScalar(k);
+      const c = box.getCenter(new THREE.Vector3()).multiplyScalar(k);
+      o.position.x -= c.x;                       // 풋프린트 중심을 원점에
+      o.position.z -= c.z;
+      o.position.y -= box.min.y * k;             // 바닥을 y=0에
+      o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+      tuneMaterials(o, bright, contrast);
+      const wrap = new THREE.Group();
+      wrap.add(o);
+      wrap.rotation.y = yaw;                      // 타일별 회전
+      // 컬러 띠 쪽(타일 위쪽) 기준 + 밴드축(db) + 타일별 위치 미세조정(dx,dy,dz)
+      wrap.position.set(pos.x + b.x * (REWARD_RADIAL + db) + dx, TOP_Y + dy, pos.z + b.z * (REWARD_RADIAL + db) + dz);
+      scene.add(wrap);
+      window.__rewards.push({
+        idx, url: R.url, obj: wrap,
+        baseY: wrap.position.y, baseYaw: yaw, t: 0,
+        hop: R.hop ?? 0,                          // 상하 hopping 진폭(월드)
+        hopW: (R.hopHz ?? 0) * Math.PI * 2,       // 초당 hop 횟수 → 각속도
+        spinW: (R.spin ?? 0) * Math.PI / 180,     // 초당 회전(도) → rad/s
+        swayAmp: (R.sway ?? 0) * Math.PI / 180,   // Y축 좌우 흔들림 진폭(±도)
+        swayW: (R.swayHz ?? 0) * Math.PI * 2,     // 초당 왕복 횟수 → 각속도
+      });
+    }, undefined, (e) => console.error('[rewards] 실패', R.url, e));
+  });
+})();
+
+// 안전망: 이정표 메시는 태양 그림자 안 만듦(발밑 블롭만). 그 외(나무판 포함) 정상.
+if (window.__signpost) window.__signpost.traverse(o => { if (o.isMesh) o.castShadow = false; });
+</script>
+<script>
+/* ── 통합(WA_integration) 끼워진 모드 ──
+   부모 통합 페이지가 ?embed=1 로 이 페이지를 iframe에 띄우면:
+   · 자체 컨트롤 패널(#sliders)을 숨기고 폰 화면만 표시
+   · 부모가 postMessage로 보내는 슬라이더/입력/트리거 값을
+     기존 컨트롤(slider-*, submit-btn, .trigger-btn)에 그대로 주입
+   기존 반응 로직은 손대지 않음 → 테마를 수정·배포하면 통합 화면에 자동 반영. */
+(function () {
+  if (new URLSearchParams(location.search).get('embed') !== '1') return;
+
+  var css = document.createElement('style');
+  css.textContent =
+    'html,body{background:transparent !important;}' +
+    'body{padding:0 !important;}' +
+    'main{transform:none !important;}' +
+    '#sliders{display:none !important;}' +
+    '#canvas-wrap{box-shadow:none !important;border-radius:0 !important;background:transparent !important;transform:scale(1.012) !important;}';
+  document.head.appendChild(css);
+
+  function setSlider(key, value) {
+    var s = document.getElementById('slider-' + key);
+    if (!s) return;
+    s.value = value;
+    s.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function clickTrigger(label) {
+    var want = String(label).trim();
+    var btns = document.querySelectorAll('.trigger-btn');
+    for (var i = 0; i < btns.length; i++) {
+      if (btns[i].textContent.trim() === want) { btns[i].click(); return; }
+    }
+  }
+
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.source !== 'wa-integration') return;
+    if (d.type === 'slider') {
+      setSlider(d.key, d.value);
+    } else if (d.type === 'submit') {
+      if (d.scores) {
+        ['move', 'rest', 'groom', 'manage'].forEach(function (k) {
+          if (d.scores[k] != null) setSlider(k, d.scores[k]);
+        });
+      }
+      var btn = document.getElementById('submit-btn');
+      if (btn) btn.click();
+    } else if (d.type === 'trigger') {
+      clickTrigger(d.label);
+    }
+  });
+
+  function announce() {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ source: 'wa-theme', type: 'ready' }, '*');
+    }
+  }
+  if (document.readyState === 'complete') announce();
+  else window.addEventListener('load', announce);
+})();
+</script>
+</body>
+</html>

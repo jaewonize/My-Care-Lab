@@ -1,0 +1,8 @@
+# 큰 원본 모델(사이트는 .opt.glb 압축본만 사용)
+asset/bike/bike_pbr.glb
+asset/bike/bike_shaded.glb
+asset/lion_pbr.glb
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
