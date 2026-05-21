@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>My Care Lab · 나만의 솔루션</title>
 <style>
   :root {
@@ -45,7 +48,6 @@
   @media (max-width: 400px) and (max-height: 820px) {
     body { padding: 0; background: var(--frame); }
     .phone { border-radius: 0 !important; box-shadow: none !important; }
-    .phone::before { display: none; }
   }
   /* ============ Phone Frame ============ */
   .phone {
@@ -59,18 +61,7 @@
     display: flex;
     flex-direction: column;
   }
-  .phone::before {
-    content: "";
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 110px;
-    height: 28px;
-    background: #0a0a0a;
-    border-radius: 18px;
-    z-index: 20;
-  }
+  /* 다이내믹 아일랜드 노치 제거 — 더 깨끗한 풀블리드 화면 */
   .statusbar {
     position: absolute;
     top: 0;
@@ -1445,7 +1436,7 @@
 
     <div class="screens">
       <!-- ============== HOME ============== -->
-      <section class="screen active" id="screen-home">
+      <section class="screen" id="screen-home">
         <div class="body">
           <div class="hero">
             <div class="greeting">My Care Lab</div>
@@ -1506,7 +1497,7 @@
       </section>
 
       <!-- ============== DASHBOARD ============== -->
-      <section class="screen" id="screen-dashboard">
+      <section class="screen active" id="screen-dashboard">
         <div class="museum-stage">
           <iframe class="museum-frame" data-theme="museum" src="Slow Museum/index.html" title="Slow Museum"></iframe>
           <iframe class="museum-frame" data-theme="planet" src="Slow-Planet/index.html" title="Slow Planet"></iframe>
@@ -1556,11 +1547,11 @@
     </div>
 
     <nav class="tabbar" id="tabbar">
-      <button class="tab" data-tab="dashboard">
+      <button class="tab active" data-tab="dashboard">
         <span class="tab-ico">🏛</span>
         <span>대시보드</span>
       </button>
-      <button class="tab active" data-tab="solution">
+      <button class="tab" data-tab="solution">
         <span class="tab-ico">✨</span>
         <span>솔루션</span>
       </button>
@@ -1587,7 +1578,7 @@ const STATE = {
   targetDays: 0,
   plan: null,
   rewards: [],
-  tab: 'solution',
+  tab: 'dashboard',
   theme: 'museum',
   newReward: null,
   missionsDone: 0,   // 미션 완료 카운터 — 갤러리 아이템 추가 시퀀스 결정
@@ -2572,6 +2563,8 @@ renderHome();
 renderDashboard();
 setupMuseumIframes();
 bindTabbar();
+/* 시작 화면 = 대시보드 — phone에 is-dashboard 클래스 + 탭바 상태 동기화 */
+document.getElementById('phone').classList.add('is-dashboard');
 </script>
 </body>
 </html>
