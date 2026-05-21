@@ -1169,6 +1169,32 @@
   }
   .museum-frame.active { display: block; }
 
+  /* Lazy 로딩 인디케이터 — iframe src 설정 후 load 이벤트까지 표시 */
+  .museum-loading {
+    position: absolute;
+    inset: 0;
+    background: #e9ded0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    z-index: 4;
+    color: #7d7169;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .museum-loading[hidden] { display: none; }
+  .loading-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(125, 113, 105, .25);
+    border-top-color: #7d7169;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   /* 대시보드 활성 시 chrome 정리 — 레이아웃은 안 건드리고 visual만 처리.
      statusbar/tabbar 둘 다 항상 absolute라 점프 없음. */
   .phone.is-dashboard .statusbar { opacity: 0; }
@@ -1499,9 +1525,13 @@
       <!-- ============== DASHBOARD ============== -->
       <section class="screen active" id="screen-dashboard">
         <div class="museum-stage">
-          <iframe class="museum-frame" data-theme="museum" src="Slow Museum/index.html" title="Slow Museum"></iframe>
-          <iframe class="museum-frame" data-theme="planet" src="Slow-Planet/index.html" title="Slow Planet"></iframe>
-          <iframe class="museum-frame" data-theme="marble" src="Wellness Marble/index.html" title="Wellness Marble"></iframe>
+          <iframe class="museum-frame" data-theme="museum" data-src="Slow Museum/index.html" title="Slow Museum"></iframe>
+          <iframe class="museum-frame" data-theme="planet" data-src="Slow-Planet/index.html" title="Slow Planet"></iframe>
+          <iframe class="museum-frame" data-theme="marble" data-src="Wellness Marble/index.html" title="Wellness Marble"></iframe>
+          <div class="museum-loading" id="museum-loading" hidden>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">로딩 중…</div>
+          </div>
           <button class="theme-pill museum-theme-pill" id="theme-switch">
             <span class="theme-ico" id="theme-ico">🏛</span>
             <span class="theme-name" id="theme-name">Slow Museum</span>
@@ -2485,16 +2515,32 @@ function setupMuseumIframes() {
         style.textContent = FRAME_INJECT_CSS;
         doc.head.appendChild(style);
       } catch (e) { /* same-origin should succeed for local file */ }
+      // 활성 iframe이 방금 로드 완료 → 스피너 숨김
+      const loading = document.getElementById('museum-loading');
+      if (loading && frame.classList.contains('active')) loading.hidden = true;
       fitMuseumFrames();
     });
   });
-  // 초기 활성 테마 표시
+  // 초기 활성 테마 — 첫 번째 iframe만 로드 트리거
   applyActiveTheme();
 }
 
+/* Lazy 로딩: 활성 테마 iframe에만 src 설정 (한 번만).
+   비활성은 src 미설정 → 네트워크 요청 안 일어남 → 초기 로드 시간 단축. */
 function applyActiveTheme() {
+  const loading = document.getElementById('museum-loading');
   document.querySelectorAll('.museum-frame').forEach(f => {
-    f.classList.toggle('active', f.dataset.theme === STATE.theme);
+    const isActive = f.dataset.theme === STATE.theme;
+    f.classList.toggle('active', isActive);
+    if (isActive) {
+      // 아직 로드 안 한 iframe이면 src 설정 → 로드 시작
+      if (!f.src && f.dataset.src) {
+        if (loading) loading.hidden = false;
+        f.src = f.dataset.src;
+      } else if (loading) {
+        loading.hidden = true;
+      }
+    }
   });
   fitMuseumFrames();
 }
