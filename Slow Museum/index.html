@@ -461,22 +461,17 @@ const SCULPT_SEQ = [
 const PED_POS = [ [-2.0,-1.8], [0.0,-1.8], [2.0,-1.8], [-1.2,-5.5], [1.2,-5.5] ]; // #1..#5
 const PED_SLOTS = [0, 2, 3, 4];                   // 회전 슬롯 #1·#3·#4·#5 (index 0,2,3,4)
 // #2(index 1, 앞열 중앙) = 전 턴 고정 기준작. 회전 시퀀스에선 제외(중복 방지)
-const PED_FIXED = { 1: 'carol_gold' };
-const _fixedNames = Object.values(PED_FIXED);
-const _turnSculpts = SCULPT_SEQ.slice((TURN - 1) * 4, TURN * 4)
-  .filter(n => !_fixedNames.includes(n));
-const PED_ASSIGN = {};
-PED_SLOTS.forEach((slot, k) => { if (_turnSculpts[k]) PED_ASSIGN[slot] = _turnSculpts[k]; });
-Object.assign(PED_ASSIGN, PED_FIXED);            // 고정 슬롯 적용(회전 위에 덮어씀)
+// My Care Lab PoC 초기 상태: #1·#2 빈 전시대(h=0.3), #3 milo, #4 thinker, #5 brancusi.
+// 빈 전시대는 런타임에 window.gallery.addSculpture()로 thrower/nike 등 추가 가능.
+const PED_ASSIGN = { 2: 'milo', 3: 'thinker', 4: 'brancusi' };
 PED_POS.forEach(([x, z], i) => {
   const sname = PED_ASSIGN[i];
-  if (!sname) return;                             // 빈 전시대(#2 등) → 미생성
-  const h = (SCULPT_PED_H[sname] != null) ? SCULPT_PED_H[sname] : PED_DEFAULT_H;
-  const wx = (SCULPT_PED_WX[sname] != null) ? SCULPT_PED_WX[sname] : 1;
-  const wz = (SCULPT_PED_WZ[sname] != null) ? SCULPT_PED_WZ[sname] : 1;
+  const h = sname ? ((SCULPT_PED_H[sname] != null) ? SCULPT_PED_H[sname] : PED_DEFAULT_H) : 0.3;
+  const wx = sname ? ((SCULPT_PED_WX[sname] != null) ? SCULPT_PED_WX[sname] : 1) : 1;
+  const wz = sname ? ((SCULPT_PED_WZ[sname] != null) ? SCULPT_PED_WZ[sname] : 1) : 1;
   const p = makePedestal(h, wx, wz);
   p.position.set(x, 0, z);
-  p.userData._sculpt = sname;
+  if (sname) p.userData._sculpt = sname;
   zones.move.group.add(p);
   zones.move.items.push(p);
 });
@@ -655,32 +650,52 @@ const EXHIBIT = {
     'summer','tollgate','view_of_venice','water_lilies!' ] },
 };
 const MANAGE_HEIGHT_KEEP = { HK1: 1, HK2: 1, rothko_1: 1, rothko_2: 1 };  // height-fit 1.9 (mat 포함시 원화면적 유지)
+
+/* 액자 1개에 그림 로드 — 초기/런타임 공용. entry는 'name' 또는 'name!'(keep). */
+function _loadPaintingToFrame(f, zk, entry) {
+  const z = EXHIBIT[zk];
+  const keep = entry.charAt(entry.length - 1) === '!';
+  const name = keep ? entry.slice(0, -1) : entry;
+  f.userData._art = name;
+  f.userData._entry = entry;
+  f.userData._empty = false;
+  const src = 'asset/' + z.dir + '/' + name + (keep ? '.jpg' : '.work.jpg');
+  texLoader.load(src, tex => {
+    tex.encoding = THREE.sRGBEncoding;
+    const iw = tex.image.naturalWidth || tex.image.width;
+    const ih = tex.image.naturalHeight || tex.image.height;
+    const aspect = iw / ih;
+    if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
+    else fitFrameByArea(f, tex, aspect, z.area);
+  }, undefined, err => console.error(zk + ' load failed:', name, err));
+}
+
+/* My Care Lab PoC 초기 상태:
+   - groom(초상화/정면 벽): 4슬롯 모두 채움
+   - rest(풍경/왼쪽 벽), manage(추상/오른쪽 벽): slot 1·3 빈 액자
+   빈 액자는 런타임에 window.gallery.addPainting()으로 채움. */
+const EMPTY_SLOTS_BY_ZONE = { groom: new Set(), rest: new Set([1, 3]), manage: new Set([1, 3]) };
 Object.keys(EXHIBIT).forEach(zk => {
   const z = EXHIBIT[zk];
-  z.seq.slice((TURN - 1) * 4, TURN * 4).forEach((entry, i) => {
+  const turnSeq = z.seq.slice((TURN - 1) * 4, TURN * 4);
+  const emptySet = EMPTY_SLOTS_BY_ZONE[zk] || new Set();
+  turnSeq.forEach((entry, i) => {
     const f = zones[zk].items[i];
     if (!f) return;
-    const keep = entry.charAt(entry.length - 1) === '!';
-    const name = keep ? entry.slice(0, -1) : entry;
-    f.userData._art = name;                       // 단독감상 라벨용(현재는 파일명)
-    const src = 'asset/' + z.dir + '/' + name + (keep ? '.jpg' : '.work.jpg');
-    texLoader.load(src, tex => {
-      tex.encoding = THREE.sRGBEncoding;
-      const iw = tex.image.naturalWidth || tex.image.width;
-      const ih = tex.image.naturalHeight || tex.image.height;
-      const aspect = iw / ih;
-      if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
-      else fitFrameByArea(f, tex, aspect, z.area);
-      if (++_loaded[zk] === 4) layoutWallUniform(zk);    // 벽 4개 다 로드되면 균일 간격 재배치
-    }, undefined, err => console.error(zk + ' load failed:', name, err));
+    if (emptySet.has(i)) {
+      f.userData._empty = true;
+      f.userData._zone = zk;
+      return;
+    }
+    _loadPaintingToFrame(f, zk, entry);
   });
 });
 
-// ─── 조각 GLB 로드 → 전시대 위에 정규화 배치 (이번 턴 생성된 전시대만) ───
+// ─── 조각 GLB 로드 → 전시대 위에 정규화 배치 (초기 + 런타임 추가) ───
 const gltfLoader = new THREE.GLTFLoader();
 if (window.MeshoptDecoder) gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 const _sbox = new THREE.Box3(), _ssz = new THREE.Vector3(), _sctr = new THREE.Vector3();
-zones.move.items.forEach(ped => {
+function _loadSculptureToPed(ped) {
   const name = ped.userData._sculpt;
   if (!name) return;
   const adj = SCULPT_ADJ[name] || { scale: 1, ry: 0 };
@@ -731,7 +746,9 @@ zones.move.items.forEach(ped => {
     ped.add(spot);
     ped.userData.spot = spot;                        // 추후 개별 조정용
   }, undefined, err => console.error('GLB load failed:', name, err));
-});
+}
+// 초기 조각 로드 (PED_ASSIGN에 지정된 슬롯)
+zones.move.items.forEach(ped => { if (ped.userData._sculpt) _loadSculptureToPed(ped); });
 
 // 단독 감상 시 해당 작품을 확실히 밝히는 포커스 조명
 const focusLight = new THREE.PointLight(0xfff2dc, 0, 9, 1.5);
@@ -1118,7 +1135,9 @@ if (renderer.capabilities.isWebGL2) {
 const composer = new THREE.EffectComposer(renderer, _composerTarget);   // 멀티샘플 타깃(없으면 기본 동작)
 composer.addPass(new THREE.RenderPass(scene, camera));
 const bokeh = new THREE.BokehPass(scene, camera, {
-  focus: 8.0, aperture: 0.0016, maxblur: 0.012,  // focus는 매 프레임 거리값 / 점진적 블러
+  // 앞줄 조각(#1·#2·#3) 초점, 뒤로 갈수록 점진적 아웃포커스.
+  // aperture/maxblur 키워서 뒷줄 조각·뒷벽 그림이 또렷이 흐려지도록.
+  focus: 8.0, aperture: 0.004, maxblur: 0.022,
   width: W * _dpr, height: H * _dpr,
 });
 // BokehPass 기본 needsSwap=false → 뒤에 패스가 오면 블러 결과가 버려짐.
@@ -1270,6 +1289,52 @@ window.__scores = scores;
   if (document.readyState === 'complete') announce();
   else window.addEventListener('load', announce);
 })();
+
+/* ─── My Care Lab 연동 API ─────────────────────────────────────────
+   부모 페이지(index.html)가 미션 완료 시점에 호출.
+   ─── addSculpture(slotIdx, name)
+       slotIdx: 0..4 (#1..#5 전시대), name: 'thrower' | 'nike' | ...
+   ─── addPainting()
+       빈 액자가 있는 벽 중 우선 portrait(groom) → random other
+       에서 빈 슬롯 하나 골라, 해당 벽 시퀀스의 미사용 그림 무작위 로드. */
+window.gallery = {
+  addSculpture(slotIdx, name) {
+    const ped = zones.move.items[slotIdx];
+    if (!ped || ped.userData._sculpt) return false;
+    ped.userData._sculpt = name;
+    _loadSculptureToPed(ped);
+    return true;
+  },
+  addPainting() {
+    const pickZone = (zk) => {
+      const empties = zones[zk].items.filter(f => f.userData._empty);
+      return empties.length ? empties[Math.floor(Math.random() * empties.length)] : null;
+    };
+    // 우선 portrait(groom), 그 다음 random
+    let f = pickZone('groom');
+    let zk = 'groom';
+    if (!f) {
+      const others = ['rest', 'manage'].filter(k => zones[k].items.some(it => it.userData._empty));
+      if (!others.length) return null;
+      zk = others[Math.floor(Math.random() * others.length)];
+      f = pickZone(zk);
+    }
+    if (!f) return null;
+    const z = EXHIBIT[zk];
+    const shownEntries = new Set(zones[zk].items.map(it => it.userData._entry).filter(Boolean));
+    const candidates = z.seq.filter(s => !shownEntries.has(s));
+    if (!candidates.length) return null;
+    const entry = candidates[Math.floor(Math.random() * candidates.length)];
+    _loadPaintingToFrame(f, zk, entry);
+    return { zone: zk, name: entry.replace(/!$/, '') };
+  },
+  getCounts() {
+    return {
+      sculptures: zones.move.items.filter(p => p.userData._sculpt).length,
+      paintings: ['groom','rest','manage'].reduce((s,k)=>s+zones[k].items.filter(f=>!f.userData._empty).length, 0),
+    };
+  },
+};
 </script>
 </body>
 </html>

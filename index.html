@@ -1590,6 +1590,7 @@ const STATE = {
   tab: 'solution',
   theme: 'museum',
   newReward: null,
+  missionsDone: 0,   // 미션 완료 카운터 — 갤러리 아이템 추가 시퀀스 결정
 };
 
 const TODAY = new Date('2026-05-21');
@@ -2335,17 +2336,45 @@ function makeSilhouetteDataURL() {
 /* ============================================================
    Reward flow
    ============================================================ */
+/* 미션 완료 → 보상 페이지 건너뛰고 대시보드 갤러리에 직접 반영.
+   순서: 1번째 → thrower @ slot 1 (#2)
+          2번째 → nike @ slot 0 (#1)
+          3번째 이후 → painting (groom 우선, 그 뒤 random) */
 function onNudgeDone(cat = 'burn') {
-  // 솔루션·카테고리 구분 없이 전체 풀에서 미획득 아이템 랜덤 지급
-  const owned = STATE.rewards.map(r => r.name);
-  const remaining = SCULPTURES.filter(p => !owned.includes(p.name));
-  const pool = remaining.length ? remaining : SCULPTURES;
-  const pick = pool[Math.floor(Math.random() * pool.length)];
-  const reward = { cat, name: pick.name, art: pick.art, at: Date.now() };
-  STATE.rewards.push(reward);
-  STATE.newReward = reward;
-  saveState();
-  goReward(reward);
+  STATE.missionsDone += 1;
+  const n = STATE.missionsDone;
+  let reward = null;
+
+  // 활성 테마 iframe(현재 시연은 museum 우선)의 gallery API 호출
+  const frame = document.querySelector(`.museum-frame[data-theme="museum"]`);
+  const gallery = frame?.contentWindow?.gallery;
+
+  if (n === 1 && gallery) {
+    gallery.addSculpture(1, 'thrower');
+    reward = { kind: 'sculpture', name: 'thrower', slot: 1 };
+  } else if (n === 2 && gallery) {
+    gallery.addSculpture(0, 'nike');
+    reward = { kind: 'sculpture', name: 'nike', slot: 0 };
+  } else if (gallery) {
+    const added = gallery.addPainting();
+    if (added) reward = { kind: 'painting', name: added.name, zone: added.zone };
+  }
+
+  if (reward) {
+    STATE.rewards.push({ cat, ...reward, at: Date.now() });
+    STATE.newReward = reward;
+  }
+
+  // 대시보드(Slow Museum)로 자동 전환 — 보상 페이지 없이 바로 갤러리 업데이트 시각화
+  if (STATE.theme !== 'museum') {
+    STATE.theme = 'museum';
+    document.getElementById('theme-ico').textContent = '🏛';
+    document.getElementById('theme-name').textContent = 'Slow Museum';
+    applyActiveTheme();
+  }
+  setActiveTab('dashboard');
+  renderDashboard();
+  goScreen('screen-dashboard');
 }
 
 function goReward(reward) {
