@@ -1387,6 +1387,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
   /* === Chat helpers === */
   const chatEl = document.getElementById('chat');
+  let _scrollAnchor = null;   // 스크롤 기준 = 마지막 사용자 메시지 (없으면 마지막 요소)
   function appendAgent(html) {
     const w = document.createElement('div');
     w.className = 'msg agent';
@@ -1397,10 +1398,18 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const w = document.createElement('div');
     w.className = 'msg user';
     w.innerHTML = `<div class="bubble">${text}</div>`;
-    chatEl.appendChild(w); scrollChat();
+    chatEl.appendChild(w); _scrollAnchor = w; scrollChat();
   }
   function appendNode(node) { chatEl.appendChild(node); scrollChat(); }
-  function scrollChat() { requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; }); }
+  // 사용자 입력을 상단에 고정하고, 에이전트 답변/위젯이 그 아래로 순차로 보이게 (맨 아래 점프 금지)
+  function scrollChat() {
+    requestAnimationFrame(() => {
+      const anchor = (_scrollAnchor && _scrollAnchor.isConnected) ? _scrollAnchor : chatEl.lastElementChild;
+      if (!anchor) return;
+      const delta = anchor.getBoundingClientRect().top - chatEl.getBoundingClientRect().top - 12;
+      chatEl.scrollTop += delta;
+    });
+  }
 
   /* === Composer === */
   const composerInput = document.getElementById('composerInput');

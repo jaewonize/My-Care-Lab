@@ -1251,11 +1251,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .flow { width: 100%; display: flex; flex-direction: column; align-items: center; }
   .bubbles { display: flex; align-items: center; justify-content: center; height: 280px; width: 100%; transform: scale(.81); transform-origin: center; }
   .bubbles > * { flex-shrink: 0; }
-  .bubble { width: 240px; height: 240px; border-radius: 50%; background: linear-gradient(145deg, var(--hi) 0%, var(--lo) 100%); opacity: .88; mix-blend-mode: multiply; }
-  .bubbles > .bubble.b1 { z-index: 5; }
+  .flow-bubble { width: 240px; height: 240px; border-radius: 50%; background: linear-gradient(145deg, var(--hi) 0%, var(--lo) 100%); opacity: .88; mix-blend-mode: multiply; }
+  .bubbles > .flow-bubble.b1 { z-index: 5; }
   .bubbles > .peanut { width: 450px; height: 280px; margin-left: -104px; z-index: 4; opacity: .88; mix-blend-mode: multiply; display: block; }
-  .bubbles > .bubble.b4 { margin-left: -104px; z-index: 3; }
-  .bubbles > .bubble.b5 { margin-left: -84px; z-index: 2; }
+  .bubbles > .flow-bubble.b4 { margin-left: -104px; z-index: 3; }
+  .bubbles > .flow-bubble.b5 { margin-left: -84px; z-index: 2; }
   .labels { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; max-width: 880px; column-gap: 4px; padding-left: 40px; }
   .step { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
   .step .num { display: none; }
@@ -1296,7 +1296,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       <div class="col-center">
         <div class="flow">
           <div class="bubbles">
-            <div class="bubble b1" style="--sc:var(--c1);--hi:#c8e878;--lo:#8fbf3d;"></div>
+            <div class="flow-bubble b1" style="--sc:var(--c1);--hi:#c8e878;--lo:#8fbf3d;"></div>
             <svg class="peanut" viewBox="-20 -20 450 280" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
               <defs>
                 <linearGradient id="peanut-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6ed6c0"/><stop offset="100%" stop-color="#2e8fa8"/></linearGradient>
@@ -1304,8 +1304,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
               </defs>
               <g filter="url(#round-cusps)"><path fill="url(#peanut-grad)" d="M 205 35.29 A 120 120 0 1 0 205 204.71 A 120 120 0 1 0 205 35.29 Z"/></g>
             </svg>
-            <div class="bubble b4" style="--sc:var(--c4);--hi:#d4c1aa;--lo:#85714e;"></div>
-            <div class="bubble b5" style="--sc:var(--c5);--hi:#ffc0a8;--lo:#ff7a52;"></div>
+            <div class="flow-bubble b4" style="--sc:var(--c4);--hi:#d4c1aa;--lo:#85714e;"></div>
+            <div class="flow-bubble b5" style="--sc:var(--c5);--hi:#ffc0a8;--lo:#ff7a52;"></div>
           </div>
           <div class="labels">
             <div class="step" style="--sc:#8fbf3d"><div class="en">Goal</div><div class="ko">목표 체형</div><div class="d">Gen UI 기반의<br/>개인화 골 셋팅</div></div>
@@ -1485,6 +1485,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
   /* === Chat helpers === */
   const chatEl = document.getElementById('chat');
+  let _scrollAnchor = null;   // 스크롤 기준 = 마지막 사용자 메시지 (없으면 마지막 요소)
   function appendAgent(html) {
     const w = document.createElement('div');
     w.className = 'msg agent';
@@ -1495,10 +1496,18 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const w = document.createElement('div');
     w.className = 'msg user';
     w.innerHTML = `<div class="bubble">${text}</div>`;
-    chatEl.appendChild(w); scrollChat();
+    chatEl.appendChild(w); _scrollAnchor = w; scrollChat();
   }
   function appendNode(node) { chatEl.appendChild(node); scrollChat(); }
-  function scrollChat() { requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; }); }
+  // 사용자 입력을 상단에 고정하고, 에이전트 답변/위젯이 그 아래로 순차로 보이게 (맨 아래 점프 금지)
+  function scrollChat() {
+    requestAnimationFrame(() => {
+      const anchor = (_scrollAnchor && _scrollAnchor.isConnected) ? _scrollAnchor : chatEl.lastElementChild;
+      if (!anchor) return;
+      const delta = anchor.getBoundingClientRect().top - chatEl.getBoundingClientRect().top - 12;
+      chatEl.scrollTop += delta;
+    });
+  }
 
   /* === Composer === */
   const composerInput = document.getElementById('composerInput');
