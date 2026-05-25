@@ -7,6 +7,22 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Slow Museum — Gallery</title>
+<script>
+/* iframe(부모 대시보드)에 임베드되면 스스로 임베드 레이아웃 적용 — file:// 더블클릭에서도 동작 */
+if (window.self !== window.top) {
+  var s = document.createElement('style');
+  s.textContent =
+    "html,body{background:transparent!important;margin:0!important;padding:0!important;overflow:hidden!important;}"+
+    "body{display:block!important;}"+
+    "main{display:block!important;transform:none!important;padding:0!important;margin:0!important;}"+
+    "#canvas-wrap{position:absolute!important;top:0!important;left:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;}"+
+    "#sliders,.control-panel,#control-panel,#controls,aside,.sliders,.panel-right{display:none!important;}"+
+    "#cards,.cards,.score-cards,.card-row{display:none!important;}"+
+    "#phone-title{top:66px!important;left:24px!important;}"+
+    "#phone-title .pt-eyebrow{display:block!important;}";
+  document.documentElement.appendChild(s);
+}
+</script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body {
@@ -31,14 +47,29 @@ main {
 }
 #phone-title {
   position: absolute;
-  top: 25px;
-  left: 33px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #675d56;
-  letter-spacing: -0.01em;
+  top: 60px;
+  left: 24px;
   z-index: 3;
   pointer-events: none;
+}
+#phone-title .pt-eyebrow {
+  display: block;
+  font-family: "Noto Sans KR", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #d5ccc0;
+  letter-spacing: -0.2px;
+  line-height: 1;
+}
+#phone-title .pt-name {
+  display: block;
+  font-family: "Roboto", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #675d56;
+  letter-spacing: -0.8px;
+  line-height: 1;
+  margin-top: 3px;
 }
 #canvas-wrap {
   width: 360px; height: 780px;
@@ -206,14 +237,8 @@ canvas:active { cursor:grabbing; }
 <body>
 <main>
 <div id="canvas-wrap">
-  <div id="phone-title">Slow Museum</div>
+  <div id="phone-title"><span class="pt-eyebrow">소연님의</span><span class="pt-name">Slow Museum</span></div>
   <canvas id="gallery" width="360" height="780"></canvas>
-  <div id="cards">
-    <div class="card"><div class="name">잘 움직이기</div><div class="score" id="card-move">72</div></div>
-    <div class="card"><div class="name">잘 쉬기</div><div class="score" id="card-rest">60</div></div>
-    <div class="card"><div class="name">잘 가꾸기</div><div class="score" id="card-groom">48</div></div>
-    <div class="card"><div class="name">잘 다스리기</div><div class="score" id="card-manage">80</div></div>
-  </div>
   <div id="art-label">
     <div class="al-title"></div>
     <div class="al-meta"></div>
@@ -629,7 +654,7 @@ function _loadPaintingToFrame(f, zk, entry) {
   f.userData._art = name;
   f.userData._entry = entry;
   f.userData._empty = false;
-  const src = 'asset/' + z.dir + '/' + name + (keep ? '.jpg' : '.work.jpg');
+  const src = 'asset/' + z.dir + '/' + name + '.jpg';
   texLoader.load(src, tex => {
     tex.encoding = THREE.sRGBEncoding;
     const iw = tex.image.naturalWidth || tex.image.width;
@@ -893,13 +918,13 @@ function showArtLabel(data) {
   _alAnchor.set((_alBox.min.x + _alBox.max.x) / 2, _alBox.min.y, (_alBox.min.z + _alBox.max.z) / 2);
   _artLabelEl.classList.add('show');
   _alShown = true;
-  _cardsEl.style.display = 'none';                 // 단독감상: 점수카드 숨겨 캡션 영역 확보
+  if (_cardsEl) _cardsEl.style.display = 'none';   // 단독감상: 점수카드 숨겨 캡션 영역 확보(제거됨 → 가드)
   updateArtLabelPos();
 }
 function hideArtLabel() {
   _artLabelEl.classList.remove('show');
   _alShown = false;
-  _cardsEl.style.display = '';
+  if (_cardsEl) _cardsEl.style.display = '';
 }
 // (작품+전시대) 바닥선을 화면 투영 → 그 20px 아래에 라벨 (조각·그림 동일 규칙)
 function updateArtLabelPos() {
@@ -1106,8 +1131,8 @@ const composer = new THREE.EffectComposer(renderer, _composerTarget);   // 멀�
 composer.addPass(new THREE.RenderPass(scene, camera));
 const bokeh = new THREE.BokehPass(scene, camera, {
   // 앞줄 조각(#1·#2·#3) 초점, 뒤로 갈수록 점진적 아웃포커스.
-  // aperture/maxblur 키워서 뒷줄 조각·뒷벽 그림이 또렷이 흐려지도록.
-  focus: 8.0, aperture: 0.004, maxblur: 0.022,
+  // 심도를 깊게(원경 블러 완화): aperture/maxblur 낮춰 뒷줄·뒷벽이 덜 흐리게.
+  focus: 8.0, aperture: 0.003, maxblur: 0.004,
   width: W * _dpr, height: H * _dpr,
 });
 // BokehPass 기본 needsSwap=false → 뒤에 패스가 오면 블러 결과가 버려짐.

@@ -7,6 +7,22 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Wellness Marble — Board</title>
+<script>
+/* iframe(부모 대시보드)에 임베드되면 스스로 임베드 레이아웃 적용 — file:// 더블클릭에서도 동작 */
+if (window.self !== window.top) {
+  var s = document.createElement('style');
+  s.textContent =
+    "html,body{background:transparent!important;margin:0!important;padding:0!important;overflow:hidden!important;}"+
+    "body{display:block!important;}"+
+    "main{display:block!important;transform:none!important;padding:0!important;margin:0!important;}"+
+    "#canvas-wrap{position:absolute!important;top:0!important;left:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;}"+
+    "#sliders,.control-panel,#control-panel,#controls,aside,.sliders,.panel-right{display:none!important;}"+
+    "#cards,.cards,.score-cards,.card-row{display:none!important;}"+
+    "#phone-title{top:66px!important;left:24px!important;}"+
+    "#phone-title .pt-eyebrow{display:block!important;}";
+  document.documentElement.appendChild(s);
+}
+</script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body {
@@ -31,14 +47,29 @@ main {
 }
 #phone-title {
   position: absolute;
-  top: 25px;
-  left: 33px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #ff9d6b;
-  letter-spacing: -0.01em;
+  top: 60px;
+  left: 24px;
   z-index: 3;
   pointer-events: none;
+}
+#phone-title .pt-eyebrow {
+  display: block;
+  font-family: "Noto Sans KR", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #948a7f;
+  letter-spacing: -0.2px;
+  line-height: 1;
+}
+#phone-title .pt-name {
+  display: block;
+  font-family: "Roboto", "Noto Sans KR", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: #ff9d6b;
+  letter-spacing: -0.8px;
+  line-height: 1;
+  margin-top: 3px;
 }
 #canvas-wrap {
   width: 360px; height: 780px;
@@ -186,14 +217,8 @@ canvas:active { cursor:grabbing; }
 <body>
 <main>
 <div id="canvas-wrap">
-  <div id="phone-title">Wellness Marble</div>
+  <div id="phone-title"><span class="pt-eyebrow">소연님의</span><span class="pt-name">Wellness Marble</span></div>
   <canvas id="board" width="360" height="780"></canvas>
-  <div id="cards">
-    <div class="card"><div class="name">잘 움직이기</div><div class="score" id="card-move">72</div></div>
-    <div class="card"><div class="name">잘 쉬기</div><div class="score" id="card-rest">60</div></div>
-    <div class="card"><div class="name">잘 가꾸기</div><div class="score" id="card-groom">48</div></div>
-    <div class="card"><div class="name">잘 다스리기</div><div class="score" id="card-manage">80</div></div>
-  </div>
 </div>
 
 </main>

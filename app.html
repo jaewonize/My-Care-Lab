@@ -1,0 +1,2005 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>My Care Lab · 실험실</title>
+<script>/* 피칭 페이지 iframe 임베드 모드: ?embed=1 이면 폰만 좌상단에 노출 */
+document.documentElement.classList.toggle('embed', location.search.indexOf('embed') > -1);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:           #e8eff1;
+    --card:         #ffffff;
+    --primary:      #1aa6c2;
+    --primary-2:    #3fbfd8;
+    --primary-soft: #d3edf3;
+    --mint:         #2db58a;
+    --gradient-key: linear-gradient(135deg, #6fd9b4 0%, #6cd4cc 50%, #6cb8e2 100%);
+    --ink:          #142b34;
+    --ink-2:        #4a626b;
+    --ink-3:        #8aa0a8;
+    --ink-4:        #c2d1d6;
+    --hair:         #e8edef;
+    --font:         "Roboto", "Noto Sans KR", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: var(--font);
+    background: #d8dbe6;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px;
+    display: grid;
+    place-items: center;
+  }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .stage-label {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    color: #6a7080;
+    letter-spacing: -.1px;
+  }
+  /* 임베드 모드: 배경/여백 제거하고 폰만 좌상단 360×780으로 (피칭 iframe용) */
+  html.embed, html.embed body { height: auto; }
+  html.embed body { padding: 0; margin: 0; background: transparent; display: block; }
+  html.embed .stage { gap: 0; align-items: center; }
+  html.embed body { display: flex; align-items: center; justify-content: center; }
+  html.embed .stage-label { display: none; }
+  html.embed .phone { box-shadow: none; }
+
+  /* ============================================================
+     Phone shell
+     ============================================================ */
+  .phone {
+    width: 360px;
+    height: 780px;
+    border-radius: 36px;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.06),
+      0 30px 80px rgba(20,30,60,.22),
+      inset 0 0 0 1px rgba(0,0,0,.04);
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(70% 50% at 12% 12%, rgba(176,232,210,.55) 0%, transparent 70%),
+      radial-gradient(70% 50% at 92% 58%, rgba(171,222,232,.5) 0%, transparent 70%),
+      linear-gradient(180deg, #eef5f1 0%, #e3eef0 100%);
+  }
+
+  /* Status bar */
+  .statusbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 36px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 26px;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    pointer-events: none;
+    letter-spacing: -.1px;
+  }
+  .statusbar .time { line-height: 1; }
+  .statusbar .icons { display: inline-flex; gap: 5px; align-items: center; }
+  .statusbar .icons svg { display: block; opacity: .9; }
+
+  /* ============================================================
+     Screens — show/hide
+     ============================================================ */
+  .screen {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .screen.active { opacity: 1; pointer-events: auto; }
+
+  /* ============================================================
+     HOME — Solution Tab
+     ============================================================ */
+  .home-body {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 56px 20px 90px;
+    --fade: linear-gradient(to bottom,
+      transparent 0,
+      rgba(0,0,0,.25) 14px,
+      rgba(0,0,0,.7) 36px,
+      #000 64px,
+      #000 calc(100% - 100px),
+      rgba(0,0,0,.55) calc(100% - 80px),
+      transparent calc(100% - 60px),
+      transparent 100%);
+    -webkit-mask-image: var(--fade);
+            mask-image: var(--fade);
+  }
+  .home-body > * + * { margin-top: 16px; }
+  .home-body::-webkit-scrollbar { width: 0; }
+
+  .head { padding: 10px 4px 6px; }
+  .head .greet-eyebrow {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-3);
+    letter-spacing: -.2px;
+    line-height: 1;
+  }
+  .head .greet-title {
+    font-family: "Roboto", "Noto Sans KR", sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #2db58a;
+    letter-spacing: -.8px;
+    line-height: 1;
+    margin-top: 3px;
+  }
+
+  /* Hero — 새 솔루션 만들기 */
+  .hero {
+    border-radius: 22px;
+    padding: 26px 24px 26px;
+    background:
+      radial-gradient(85% 70% at 12% 18%, rgba(123,224,184,.78) 0%, transparent 62%),
+      radial-gradient(75% 64% at 92% 88%, rgba(108,200,224,.74) 0%, transparent 58%),
+      linear-gradient(135deg, rgba(111,217,180,.78) 0%, rgba(108,212,204,.74) 50%, rgba(108,184,226,.78) 100%);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    min-height: 168px;
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.4),
+      0 1px 2px rgba(20,50,60,.04),
+      0 16px 36px rgba(40, 150, 180, .26);
+    border: 1px solid rgba(255,255,255,.32);
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+  .hero:active { transform: scale(.99); }
+  .hero .h-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; }
+  .hero .h-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    line-height: 1.25;
+    color: #ffffff;
+    word-break: keep-all;
+    text-shadow: 0 1px 8px rgba(60,40,100,.18);
+  }
+  .hero .h-meta {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    color: rgba(255,255,255,.95);
+    margin-top: 10px;
+    line-height: 1.5;
+    font-weight: 500;
+    letter-spacing: -.1px;
+    word-break: keep-all;
+    text-shadow: 0 1px 4px rgba(20,70,90,.18);
+  }
+  .hero .h-arrow {
+    align-self: flex-end;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    border: 1px solid rgba(255,255,255,.45);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    flex: 0 0 44px;
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    transition: background .15s, transform .1s;
+  }
+  .hero:hover .h-arrow { background: rgba(255,255,255,.4); }
+
+  /* Section header */
+  .sec {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 4px 2px 0;
+  }
+  .sec-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.3px;
+  }
+  .sec-sub {
+    font-family: "Roboto", sans-serif;
+    font-size: 12px;
+    color: var(--ink-3);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+  .sort-btn {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--ink-2);
+    font-weight: 500;
+    padding: 4px 0;
+    letter-spacing: -.1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .sort-btn svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+  /* List */
+  .list {
+    background: linear-gradient(160deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.42) 100%);
+    backdrop-filter: blur(22px) saturate(1.5);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 20px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.55),
+      0 1px 2px rgba(20,40,35,.04),
+      0 12px 28px rgba(40,90,80,.10);
+    overflow: hidden;
+  }
+  .list-item {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,.5);
+    transition: background .15s;
+  }
+  .list-item:last-child { border-bottom: 0; }
+  .list-item:hover { background: rgba(255,255,255,.35); }
+  .list-item .li-row1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .list-item .li-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.3px;
+    line-height: 1.2;
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: keep-all;
+  }
+  .list-item .li-pct-wrap { display: inline-flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+  .list-item .li-pct {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -.2px;
+  }
+  .list-item .li-bar {
+    width: 48px;
+    height: 5px;
+    background: rgba(20,60,50,.10);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .list-item .li-bar i { display: block; height: 100%; background: var(--primary); border-radius: 4px; }
+  .list-item .li-row2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 12px;
+    color: var(--ink-3);
+    font-weight: 500;
+    letter-spacing: -.1px;
+  }
+  .list-item .li-meta { white-space: nowrap; }
+  .list-item .li-cat  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .li-new {
+    display: inline-flex;
+    align-items: center;
+    font-family: "Roboto", sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #ffffff;
+    background: var(--gradient-key);
+    padding: 3px 7px 2px;
+    border-radius: 999px;
+    margin-right: 8px;
+    line-height: 1;
+    flex: 0 0 auto;
+    vertical-align: middle;
+  }
+  .list-item .li-detail { display: none; margin-top: 4px; }
+  .list-item.open { background: rgba(255,255,255,.45); }
+  .list-item.open .li-detail { display: block; }
+
+  /* Inline nudge */
+  .inline-nudge {
+    margin-top: 10px;
+    padding: 14px 14px 12px;
+    background: rgba(255,255,255,.7);
+    border: 1px solid rgba(255,255,255,.7);
+    border-radius: 14px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(20,40,50,.04);
+  }
+  .inline-nudge .in-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .inline-nudge .in-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+    flex: 0 0 8px;
+  }
+  .inline-nudge .in-cat {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -.1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .inline-nudge .in-time {
+    font-family: "Roboto", sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-weight: 500;
+    flex: 0 0 auto;
+  }
+  .inline-nudge .in-switch {
+    background: rgba(26,166,194,.10);
+    border: 0;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-family: var(--font);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: -.1px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .inline-nudge .in-switch:hover { background: var(--primary); color: #fff; }
+  .inline-nudge .in-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.35;
+    letter-spacing: -.2px;
+    word-break: keep-all;
+    margin-bottom: 4px;
+  }
+  .inline-nudge .in-body {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    word-break: keep-all;
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+  .inline-nudge .in-actions { display: flex; gap: 6px; }
+  .inline-nudge .in-btn {
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 9px 14px;
+    border-radius: 10px;
+    letter-spacing: -.1px;
+    transition: transform .1s, background .15s;
+  }
+  .inline-nudge .in-btn:active { transform: scale(.98); }
+  .inline-nudge .in-do { flex: 1.4; background: var(--gradient-key); color: #ffffff; }
+  .inline-nudge .in-do:hover { filter: brightness(1.04); }
+  .inline-nudge .in-skip { flex: 1; background: rgba(20,60,70,.06); color: var(--ink-2); }
+
+  /* Tab bar */
+  .tabbar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    z-index: 25;
+    background: transparent;
+    display: flex;
+    padding: 0 24px 8px;
+  }
+  .tab {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-family: "Noto Sans KR", sans-serif;
+    color: var(--ink-3);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -.2px;
+    height: 100%;
+    position: relative;
+    transition: color .15s;
+  }
+  .tab:hover { color: var(--ink-2); }
+  .tab.active { color: var(--primary); font-weight: 700; }
+  .tab.active::after {
+    content: "";
+    position: absolute;
+    left: 38%; right: 38%;
+    bottom: 6px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--primary);
+  }
+
+  /* ============================================================
+     CHAT — Agent Builder
+     ============================================================ */
+  .appbar {
+    position: absolute;
+    top: 36px; left: 0; right: 0;
+    height: 52px;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+    transition: background .15s;
+    flex: 0 0 36px;
+  }
+  .back-btn:hover { background: rgba(255,255,255,.5); }
+  .back-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .appbar-title { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; padding-left: 4px; }
+  .appbar-title .at-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.3px;
+    line-height: 1;
+  }
+
+  .chat {
+    position: absolute;
+    top: 88px;
+    left: 0; right: 0;
+    bottom: 76px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    --fade: linear-gradient(to bottom,
+      transparent 0,
+      rgba(0,0,0,.4) 8px,
+      #000 28px,
+      #000 calc(100% - 24px),
+      transparent 100%);
+    -webkit-mask-image: var(--fade);
+            mask-image: var(--fade);
+  }
+  .chat::-webkit-scrollbar { width: 0; }
+
+  .msg { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; }
+  .msg.agent { justify-content: flex-start; }
+  .msg.user  { justify-content: flex-end; }
+  .agent-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6fd9b4 0%, #6cd4cc 60%, #6cb8e2 100%);
+    display: grid;
+    place-items: center;
+    flex: 0 0 28px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 4px rgba(40,150,170,.20);
+    position: relative;
+  }
+  .agent-avatar::after {
+    content: "";
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.95);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.3);
+  }
+  .bubble {
+    max-width: 78%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13.5px;
+    line-height: 1.55;
+    letter-spacing: -.2px;
+    word-break: keep-all;
+  }
+  .msg.agent .bubble {
+    background: linear-gradient(160deg, rgba(255,255,255,.58) 0%, rgba(255,255,255,.35) 100%);
+    border: 1px solid rgba(255,255,255,.55);
+    backdrop-filter: blur(22px) saturate(1.5);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    color: var(--ink);
+    border-bottom-left-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(20,40,50,.04), 0 6px 18px rgba(40,90,110,.08);
+  }
+  .msg.user .bubble {
+    background:
+      radial-gradient(85% 70% at 12% 18%, rgba(123,224,184,.78) 0%, transparent 62%),
+      radial-gradient(75% 64% at 92% 88%, rgba(108,200,224,.74) 0%, transparent 58%),
+      linear-gradient(135deg, rgba(111,217,180,.88) 0%, rgba(108,212,204,.85) 50%, rgba(108,184,226,.88) 100%);
+    backdrop-filter: blur(18px) saturate(1.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    border: 1px solid rgba(255,255,255,.5);
+    color: #ffffff;
+    font-weight: 500;
+    border-bottom-right-radius: 6px;
+    text-shadow: 0 1px 4px rgba(20,70,90,.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 6px 18px rgba(40,150,180,.20);
+  }
+  .bubble p { margin: 0; }
+  .bubble p + p { margin-top: 6px; }
+
+  /* Quick reply chips */
+  .quick-replies { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 2px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: -.2px;
+    color: var(--primary);
+    border: 1.5px solid transparent;
+    background:
+      linear-gradient(#ffffff, #ffffff) padding-box,
+      var(--gradient-key) border-box;
+    transition: color .15s, transform .1s;
+  }
+  .chip:hover, .chip.selected {
+    color: #ffffff;
+    background: var(--gradient-key) padding-box, var(--gradient-key) border-box;
+    text-shadow: 0 1px 4px rgba(20,70,90,.18);
+    box-shadow: 0 6px 16px rgba(40,150,180,.22);
+  }
+  .chip:active { transform: scale(.97); }
+
+  /* Composer */
+  .composer {
+    position: absolute;
+    left: 12px; right: 12px;
+    bottom: 12px;
+    height: 48px;
+    z-index: 28;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 5px 0 18px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.62);
+    border: 1px solid rgba(255,255,255,.65);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(20,40,50,.04), 0 8px 22px rgba(40,90,110,.10);
+  }
+  .composer-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    outline: none;
+    font-family: var(--font);
+    font-size: 13.5px;
+    color: var(--ink);
+    letter-spacing: -.1px;
+    height: 100%;
+  }
+  .composer-input::placeholder { color: var(--ink-3); }
+  .composer-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 0;
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex: 0 0 36px;
+    transition: color .15s, background .15s;
+  }
+  .composer-icon:hover { color: var(--ink); background: rgba(20,60,70,.06); }
+  .composer-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .composer-send {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 0;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex: 0 0 36px;
+    background: linear-gradient(135deg, #6fd9b4 0%, #6cd4cc 50%, #6cb8e2 100%);
+    color: #ffffff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 4px 10px rgba(40,150,180,.25);
+    transition: transform .1s;
+  }
+  .composer-send:active { transform: scale(.94); }
+  .composer-send svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* UI Card (agent-generated widget) */
+  .ui-card {
+    background: linear-gradient(160deg, rgba(255,255,255,.78) 0%, rgba(255,255,255,.58) 100%);
+    border: 1px solid rgba(255,255,255,.65);
+    backdrop-filter: blur(22px) saturate(1.5);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    border-radius: 22px;
+    padding: 18px 18px 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 2px rgba(20,40,50,.04), 0 12px 30px rgba(40,90,110,.10);
+    max-width: 100%;
+  }
+  .uc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .uc-step {
+    font-family: "Roboto", sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    background: var(--gradient-key);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+  }
+  .uc-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.3px;
+  }
+  .uc-confirm {
+    width: 100%;
+    background: var(--gradient-key);
+    border: 0;
+    color: #ffffff;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    letter-spacing: -.2px;
+    margin-top: 20px;
+    transition: transform .1s, filter .15s;
+  }
+  .uc-confirm:hover { filter: brightness(1.04); }
+  .uc-confirm:active { transform: scale(.985); }
+
+  /* Step 4 — Plan estimate */
+  .plan-hero { padding: 2px 2px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .plan-eyebrow {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    font-weight: 600;
+    letter-spacing: -.1px;
+  }
+  .plan-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    line-height: 1.25;
+    padding-right: 4px;
+    word-break: keep-all;
+    background: var(--gradient-key);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .plan-summary {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-2);
+    font-weight: 500;
+    letter-spacing: -.1px;
+    line-height: 1.5;
+    margin-top: 8px;
+    word-break: keep-all;
+  }
+  .plan-summary strong { color: var(--ink); font-weight: 700; }
+  .plan-divider { height: 1px; background: rgba(20,60,70,.10); margin: 8px 0 14px; }
+  .cat-list { display: flex; flex-direction: column; gap: 14px; }
+  .cat-row { display: flex; gap: 12px; align-items: flex-start; }
+  .cat-bullet {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gradient-key);
+    margin-top: 6px;
+    flex: 0 0 8px;
+    box-shadow: 0 0 0 3px rgba(108, 212, 204, .14);
+  }
+  .cat-body { flex: 1 1 auto; min-width: 0; }
+  .cat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .cat-name {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -.2px;
+  }
+  .cat-bottleneck {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #b8553a;
+    background: rgba(217, 119, 87, .14);
+    padding: 2px 7px;
+    border-radius: 999px;
+    letter-spacing: -.1px;
+    line-height: 1.4;
+  }
+  .cat-target {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 12px;
+    color: var(--ink-2);
+    font-weight: 500;
+    letter-spacing: -.1px;
+    line-height: 1.45;
+    word-break: keep-all;
+  }
+  .cat-target strong { color: var(--ink); font-weight: 700; }
+  .cat-current {
+    font-family: "Roboto", sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-3);
+    font-weight: 500;
+    margin-top: 2px;
+    letter-spacing: -.1px;
+  }
+  .plan-checkpoint {
+    margin-top: 16px;
+    padding: 8px 12px 10px;
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 12px;
+  }
+  .plan-actions { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .plan-actions .uc-confirm { margin-top: 0; }
+  .plan-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Timeline (중간점검) */
+  .timeline {
+    position: relative;
+    margin: 6px 8px 4px;
+    height: 46px;
+  }
+  .tl-line {
+    position: absolute;
+    left: 0; right: 0;
+    top: 8px;
+    height: 2px;
+    background: linear-gradient(to right,
+      rgba(20,60,70,.16) 0%,
+      rgba(108,212,204,.45) 50%,
+      rgba(108,184,226,.55) 100%);
+    border-radius: 1px;
+  }
+  .tl-node {
+    position: absolute;
+    top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+  }
+  .tl-node.tl-start { left: 0; transform: none; align-items: flex-start; }
+  .tl-node.tl-end   { right: 0; left: auto; transform: none; align-items: flex-end; }
+  .tl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gradient-key);
+    box-shadow: 0 0 0 3px rgba(255,255,255,.7), 0 1px 3px rgba(40,150,180,.25);
+    margin-top: -4px;
+    z-index: 2;
+  }
+  .tl-dot.tl-dot-mile {
+    width: 10px; height: 10px;
+    background: #ffffff;
+    border: 2px solid transparent;
+    background-image:
+      linear-gradient(#ffffff, #ffffff),
+      var(--gradient-key);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+  .tl-day {
+    font-family: "Roboto", sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -.1px;
+    line-height: 1;
+    margin-top: 8px;
+    white-space: nowrap;
+  }
+  .tl-label {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-3);
+    letter-spacing: -.1px;
+    line-height: 1;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .tl-node.tl-start .tl-day,
+  .tl-node.tl-end .tl-day { color: var(--ink); }
+  .btn-ghost {
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 11px 10px;
+    border-radius: 12px;
+    letter-spacing: -.2px;
+    color: var(--ink-2);
+    background: rgba(20,60,70,.06);
+    transition: background .15s, color .15s;
+  }
+  .btn-ghost:hover { background: rgba(20,60,70,.10); color: var(--ink); }
+
+  /* ============================================================
+     Step 1 — photo + fields
+     ============================================================ */
+  .photo-slot {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; padding: 12px 14px;
+    border: 1.5px dashed rgba(20,60,70,.22);
+    border-radius: 16px;
+    background: transparent;
+    font-family: inherit; cursor: pointer; text-align: left;
+    transition: border-color .15s, background .15s;
+  }
+  .photo-slot:hover { border-color: var(--primary); background: rgba(255,255,255,.4); }
+  .photo-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--gradient-key); color: #fff;
+    display: grid; place-items: center; flex: 0 0 44px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 4px 10px rgba(40,150,180,.2);
+  }
+  .photo-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .photo-label {
+    flex: 1 1 auto; min-width: 0;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13.5px; font-weight: 700;
+    color: var(--ink); letter-spacing: -.2px;
+  }
+  .photo-hint {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 10.5px; color: var(--ink-3);
+    letter-spacing: -.1px; margin-top: 8px;
+    padding-left: 4px; line-height: 1.4;
+  }
+  .photo-skip {
+    font-size: 11px; color: var(--primary);
+    font-weight: 700; flex: 0 0 auto; letter-spacing: -.1px;
+  }
+  .uc-section { margin-top: 18px; }
+  .uc-section-label {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--ink-2); letter-spacing: -.2px; margin-bottom: 12px;
+  }
+  .fields-grid { display: grid; gap: 14px 12px; }
+  .fields-grid.g3 { grid-template-columns: 1fr 1fr 1fr; }
+  .fields-grid.g2 { grid-template-columns: 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field-label {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 10.5px; color: var(--ink-3);
+    font-weight: 600; letter-spacing: -.1px;
+  }
+  .field-value {
+    display: flex; align-items: baseline; gap: 3px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(20,60,70,.16);
+    transition: border-bottom-color .15s; min-width: 0;
+  }
+  .field-value:focus-within { border-bottom-color: var(--primary); }
+  .field-value input {
+    flex: 1 1 auto; border: 0; background: transparent;
+    font-family: "Roboto", sans-serif;
+    font-size: 17px; font-weight: 700;
+    color: var(--ink); width: 100%; min-width: 0;
+    outline: none; padding: 0; letter-spacing: -.3px;
+  }
+  .field-unit { font-family: "Roboto", sans-serif; font-size: 11px; color: var(--ink-3); font-weight: 500; flex: 0 0 auto; }
+  .seg {
+    display: inline-flex; border-radius: 999px;
+    background: rgba(20,60,70,.06); padding: 2px;
+    align-self: flex-start; margin-top: 2px;
+  }
+  .seg-opt {
+    border: 0; background: transparent;
+    padding: 6px 14px;
+    font-family: "Roboto", sans-serif;
+    font-size: 12.5px; font-weight: 700;
+    color: var(--ink-3); border-radius: 999px;
+    cursor: pointer; transition: color .15s;
+  }
+  .seg-opt.active {
+    background: var(--gradient-key); color: #fff;
+    text-shadow: 0 1px 3px rgba(20,70,90,.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 2px 6px rgba(40,150,180,.18);
+  }
+
+  /* ============================================================
+     Step 2 — silhouettes + slider
+     ============================================================ */
+  .silhouettes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .silh {
+    position: relative; aspect-ratio: 3 / 4;
+    border-radius: 16px;
+    background: rgba(20,60,70,.04);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .silh.target { background: linear-gradient(160deg, rgba(123,224,184,.20) 0%, rgba(108,184,226,.22) 100%); }
+  .silh-svg { width: 58%; height: 85%; }
+  .silh-svg path { transition: d .25s ease; }
+  .silh-caption {
+    position: absolute; bottom: 8px; left: 10px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--ink-3); letter-spacing: -.1px; line-height: 1;
+  }
+  .silh.target .silh-caption {
+    background: var(--gradient-key);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .comp-row {
+    margin-top: 18px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px; text-align: center;
+  }
+  .comp-cell { padding: 4px 2px; }
+  .comp-label {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 10.5px; color: var(--ink-3);
+    font-weight: 600; letter-spacing: -.1px; margin-bottom: 4px;
+  }
+  .comp-num {
+    font-family: "Roboto", sans-serif;
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -.6px; color: var(--ink); line-height: 1;
+  }
+  .comp-num .unit { font-size: 11px; color: var(--ink-3); font-weight: 500; margin-left: 2px; letter-spacing: 0; }
+  .comp-num.changed {
+    background: var(--gradient-key);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .comp-num.warn { background: none; color: #d97757; -webkit-text-fill-color: #d97757; }
+  .warn-msg {
+    margin-top: 12px; padding: 9px 12px;
+    background: rgba(217, 119, 87, .12);
+    color: #b8553a; border-radius: 10px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11.5px; font-weight: 600;
+    letter-spacing: -.1px; text-align: center;
+    line-height: 1.4; word-break: keep-all;
+  }
+  .warn-msg[hidden] { display: none; }
+  .slider-wrap { margin-top: 18px; padding: 0 2px; }
+  .slider-ends {
+    display: flex; justify-content: space-between;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 10.5px; color: var(--ink-3);
+    font-weight: 600; letter-spacing: -.1px; margin-bottom: 8px;
+  }
+  .slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 3px;
+    background: rgba(20,60,70,.12); outline: none; cursor: pointer;
+    background-image: var(--gradient-key);
+    background-size: var(--fill, 25%) 100%;
+    background-repeat: no-repeat;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; border: 3px solid transparent;
+    background-image: linear-gradient(#fff, #fff), var(--gradient-key);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(40,150,180,.30);
+  }
+  .slider.warn { background-image: linear-gradient(135deg, #f0a496 0%, #d97757 100%); }
+  .slider.warn::-webkit-slider-thumb {
+    background-image: linear-gradient(#fff, #fff), linear-gradient(135deg, #f0a496 0%, #d97757 100%);
+    box-shadow: 0 4px 10px rgba(217, 119, 87, .35);
+  }
+
+  /* ============================================================
+     Step 3 — date list
+     ============================================================ */
+  .date-list { display: flex; flex-direction: column; gap: 8px; }
+  .date-opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: 14px;
+    background: rgba(255,255,255,.6);
+    border: 1.5px solid transparent;
+    background-clip: padding-box;
+    cursor: pointer; transition: background .15s; position: relative;
+  }
+  .date-opt input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+  .date-opt:hover { background: rgba(255,255,255,.85); }
+  .date-opt.selected {
+    border: 1.5px solid transparent;
+    background: linear-gradient(#fff, #fff) padding-box, var(--gradient-key) border-box;
+    box-shadow: 0 4px 14px rgba(40,150,180,.10);
+  }
+  .date-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .date-title {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--ink); letter-spacing: -.3px; line-height: 1.2;
+  }
+  .date-sub {
+    font-family: "Roboto", sans-serif;
+    font-size: 11.5px; color: var(--ink-3);
+    font-weight: 500; letter-spacing: -.1px;
+  }
+  .date-day {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--ink-3); letter-spacing: -.2px;
+    flex: 0 0 auto; line-height: 1;
+  }
+  .date-opt.selected .date-day {
+    background: var(--gradient-key);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .date-bullet {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(20,60,70,.20);
+    flex: 0 0 18px; position: relative;
+  }
+  .date-bullet::after {
+    content: ""; position: absolute; inset: 3px;
+    border-radius: 50%; background: var(--gradient-key);
+    transform: scale(0); transition: transform .15s ease;
+  }
+  .date-opt.selected .date-bullet {
+    border: 1.5px solid transparent;
+    background: linear-gradient(#fff, #fff) padding-box, var(--gradient-key) border-box;
+  }
+  .date-opt.selected .date-bullet::after { transform: scale(1); }
+  /* ============================================================
+     Dashboard — 3D 테마 갤러리 (iframe) + 글래스 점수 카드
+     ============================================================ */
+  .museum-stage { position: absolute; inset: 0; overflow: hidden; background: #e9ded0; }
+  .museum-frame {
+    width: 360px; height: 780px; border: 0; background: transparent;
+    position: absolute; top: 0; left: 0; display: none;
+  }
+  .museum-frame.active { display: block; }
+  .museum-loading {
+    position: absolute; inset: 0; background: #e9ded0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; z-index: 4; color: #7d7169; font-size: 13px; font-weight: 600; letter-spacing: .3px;
+  }
+  .museum-loading[hidden] { display: none; }
+  .loading-spinner {
+    width: 32px; height: 32px; border: 3px solid rgba(125,113,105,.25);
+    border-top-color: #7d7169; border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 테마 캐러셀 도트 (우상단) */
+  .theme-dots { position: absolute; top: 50px; right: 24px; z-index: 6; display: flex; align-items: center; gap: 5px; }
+  .theme-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgba(80,72,66,.32); cursor: pointer; transition: background .25s ease; }
+  .theme-dot:hover { background: rgba(80,72,66,.55); }
+  .theme-dot.active { background: #7d7169; }
+
+  /* 점수 카드 — glassmorphism (솔루션 탭 .list 글래스와 동일 스펙: blur22·saturate1.5·엣지·그림자,
+     채움색만 각 테마 배경색으로) */
+  .score-cards {
+    position: absolute; left: 16px; right: 16px; bottom: 70px; z-index: 5;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .scard {
+    background: var(--glass-fill);
+    backdrop-filter: blur(22px) saturate(1.5);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    border: 1px solid var(--glass-edge);
+    border-radius: 18px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.55),
+      0 1px 2px rgba(20,40,35,.04),
+      0 12px 28px rgba(40,90,80,.10);
+    padding: 14px 16px;
+    min-height: 104px;
+    position: relative;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 7px;
+  }
+  .scard .s-tag {
+    order: 2; margin-top: auto;          /* 태그를 카드 하단으로 */
+    font-family: "Noto Sans KR", sans-serif; font-size: 9px; font-weight: 500;
+    letter-spacing: .6px; text-transform: uppercase; line-height: 1;
+    color: var(--ink-3); background: rgba(20,60,50,.09);
+    padding: 4px 8px; border-radius: 999px;
+  }
+  .scard-new .s-tag { order: 0; margin-top: 0; }   /* NEW 태그는 상단 유지 */
+  .scard .s-tag-new  { color: #fff; background: var(--theme-key); }
+  .scard .s-tag-done { color: var(--ink-3); background: rgba(20,40,35,.07); }
+  /* museum·marble 테마: 태그 웜그레이 틴트 fill + 웜그레이 글자 (NEW 제외 — NEW는 테마 키컬러 유지) */
+  #phone[data-theme="museum"] .scard .s-tag:not(.s-tag-new),
+  #phone[data-theme="marble"] .scard .s-tag:not(.s-tag-new) {
+    color: #7d7169;
+    background: rgba(148,138,127,.20);
+  }
+  .scard .s-title {
+    order: 1;                            /* 제목을 카드 상단으로 */
+    font-family: "Noto Sans KR", sans-serif; font-size: 14px; font-weight: 500;
+    color: var(--ink-3); letter-spacing: -.3px; line-height: 1.25; word-break: keep-all;
+  }
+  /* 제목 색 = 각 테마 태그 텍스트 색 */
+  #phone[data-theme="museum"] .scard .s-title,
+  #phone[data-theme="marble"] .scard .s-title { color: #7d7169; }
+  .scard .s-score {
+    position: absolute; right: 14px; bottom: 12px;
+    font-family: "Roboto", sans-serif; font-size: 26px; font-weight: 800; line-height: 1;
+    color: var(--theme-key);
+  }
+  .scard .s-plus { font-size: 30px; font-weight: 400; }
+  .scard-new { cursor: pointer; }
+  .scard-new:active { transform: scale(.98); }
+
+  /* 글래스 토큰: 채움은 반투명 화이트(테마 공통), 키 컬러만 테마별(=제목 색) */
+  #phone {
+    --glass-fill: linear-gradient(160deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.42) 100%);
+    --glass-edge: rgba(255,255,255,.6);
+    --theme-key: #675d56;
+  }
+  #phone[data-theme="museum"] { --theme-key: #675d56; }
+  #phone[data-theme="planet"] { --theme-key: #73CCA3; }
+  #phone[data-theme="marble"] { --theme-key: #ff9d6b; }
+  /* 대시보드 하단 탭 활성색 = 테마 키 컬러 */
+  #screen-dashboard .tab.active { color: var(--theme-key); }
+  #screen-dashboard .tab.active::after { background: var(--theme-key); }
+  /* museum·marble 테마에선 비활성 탭("실험실") 텍스트 화이트 (어두운/웜 배경 대비) */
+  #phone[data-theme="museum"] #screen-dashboard .tab:not(.active) { color: #948a7f; }
+  #phone[data-theme="marble"] #screen-dashboard .tab:not(.active) { color: #948a7f; }
+</style>
+</head>
+<body>
+
+  <div class="stage">
+    <div class="stage-label">My Care Lab · 실험실 → 솔루션 만들기 통합</div>
+    <div class="phone" id="phone">
+
+      <div class="statusbar">
+        <span class="time">9:41</span>
+        <span class="icons">
+          <svg width="14" height="11" viewBox="0 0 14 11" aria-label="signal">
+            <path fill="currentColor" d="M0 9h2v2H0zM4 6h2v5H4zM8 3h2v8H8zM12 0h2v11h-2z"/>
+          </svg>
+          <svg width="14" height="11" viewBox="0 0 14 11" aria-label="wifi">
+            <path fill="currentColor" d="M7 1.5c-2.7 0-5.2 1-7 2.9l1.2 1.2C2.8 4 4.8 3.2 7 3.2s4.2.8 5.8 2.4L14 4.4C12.2 2.5 9.7 1.5 7 1.5zm0 2.7c-2 0-3.8.8-5.2 2.1L3 7.6c1.1-1 2.5-1.7 4-1.7s2.9.7 4 1.7l1.2-1.3C10.8 5 9 4.2 7 4.2zm0 2.7C5.8 6.9 4.7 7.4 4 8.2l3 3 3-3c-.7-.8-1.8-1.3-3-1.3z"/>
+          </svg>
+          <svg width="20" height="11" viewBox="0 0 22 11" aria-label="battery">
+            <rect x="0.5" y="1" width="18" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1"/>
+            <rect x="2" y="2.5" width="13" height="6" rx=".5" fill="currentColor"/>
+            <rect x="19" y="3.5" width="2" height="4" rx=".5" fill="currentColor"/>
+          </svg>
+        </span>
+      </div>
+
+      <!-- ================== DASHBOARD ================== -->
+      <section class="screen active" id="screen-dashboard">
+        <div class="museum-stage">
+          <iframe class="museum-frame" data-theme="museum" data-src="Slow Museum/index.html" title="Slow Museum"></iframe>
+          <iframe class="museum-frame" data-theme="planet" data-src="Slow-Planet/index.html" title="Bloom Planet"></iframe>
+          <iframe class="museum-frame" data-theme="marble" data-src="Wellness Marble/index.html" title="Wellness Marble"></iframe>
+          <div class="museum-loading" id="museum-loading" hidden>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">로딩 중…</div>
+          </div>
+          <div class="theme-dots" id="theme-dots" role="tablist" aria-label="테마 전환"></div>
+          <div class="score-cards" id="score-cards">
+            <div class="scard scard-new" id="dash-new-card">
+              <span class="s-tag s-tag-new">NEW</span>
+              <div class="s-score s-plus">＋</div>
+            </div>
+            <div class="scard">
+              <span class="s-tag">진행중</span>
+              <div class="s-title">아침 5분 정원</div>
+              <div class="s-score">78</div>
+            </div>
+            <div class="scard">
+              <span class="s-tag">진행중</span>
+              <div class="s-title">밤 11시 잠들기</div>
+              <div class="s-score">65</div>
+            </div>
+            <div class="scard scard-done">
+              <span class="s-tag s-tag-done">종료</span>
+              <div class="s-title">14일 새벽 루틴</div>
+              <div class="s-score">92</div>
+            </div>
+          </div>
+        </div>
+        <nav class="tabbar">
+          <button class="tab active" data-screen="screen-dashboard">대시보드</button>
+          <button class="tab" data-screen="screen-home">실험실</button>
+        </nav>
+      </section>
+
+      <!-- ================== HOME ================== -->
+      <section class="screen" id="screen-home">
+        <div class="home-body">
+
+          <header class="head">
+            <div class="greet-eyebrow">소연님의</div>
+            <div class="greet-title">Care Lab</div>
+          </header>
+
+          <article class="hero" id="enterChat">
+            <div class="h-body">
+              <div class="h-title">나만의 건강 솔루션<br/>만들기</div>
+              <div class="h-meta">에이전트와 대화하며<br/>나에게 꼭 맞는 플랜을 함께 만들어요.</div>
+            </div>
+            <span class="h-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </article>
+
+          <div class="sec">
+            <div>
+              <span class="sec-title">진행 중인 솔루션</span><span class="sec-sub" id="solCount">2</span>
+            </div>
+            <button class="sort-btn">최신순 <svg viewBox="0 0 12 12"><path d="M3 5l3 3 3-3"/></svg></button>
+          </div>
+          <div class="list" id="solList">
+            <div class="list-item">
+              <div class="li-row1">
+                <div class="li-title">아침 5분 정원</div>
+                <div class="li-pct-wrap">
+                  <span class="li-pct">12%</span>
+                  <span class="li-bar"><i style="width:12%"></i></span>
+                </div>
+              </div>
+              <div class="li-row2">
+                <span class="li-meta">D-14</span>
+                <span class="li-cat">잘 다스리기</span>
+              </div>
+            </div>
+            <div class="list-item">
+              <div class="li-row1">
+                <div class="li-title">밤 11시 잠들기</div>
+                <div class="li-pct-wrap">
+                  <span class="li-pct">30%</span>
+                  <span class="li-bar"><i style="width:30%"></i></span>
+                </div>
+              </div>
+              <div class="li-row2">
+                <span class="li-meta">D-30</span>
+                <span class="li-cat">잘 쉬기</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="tabbar">
+          <button class="tab" data-screen="screen-dashboard">대시보드</button>
+          <button class="tab active" data-screen="screen-home">실험실</button>
+        </nav>
+      </section>
+
+      <!-- ================== CHAT ================== -->
+      <section class="screen" id="screen-chat">
+        <header class="appbar">
+          <button class="back-btn" id="backBtn" aria-label="뒤로">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="appbar-title">
+            <div class="at-title">솔루션 만들기</div>
+          </div>
+        </header>
+
+        <div class="chat" id="chat"></div>
+
+        <div class="composer">
+          <input type="text" class="composer-input" id="composerInput" placeholder="메시지 입력" />
+          <button class="composer-icon" aria-label="첨부">
+            <svg viewBox="0 0 24 24"><path d="M21 12.5l-8.5 8.5a5 5 0 01-7-7L13.5 5.5a3.5 3.5 0 014.95 4.95L10 19"/></svg>
+          </button>
+          <button class="composer-send" id="composerSend" aria-label="보내기">
+            <svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+<script>
+  /* === Screen navigation === */
+  const screenHome = document.getElementById('screen-home');
+  const screenChat = document.getElementById('screen-chat');
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+  document.getElementById('enterChat').addEventListener('click', () => {
+    resetChat();
+    showScreen('screen-chat');
+  });
+  document.getElementById('backBtn').addEventListener('click', () => showScreen('screen-home'));
+
+  /* === Chat helpers === */
+  const chatEl = document.getElementById('chat');
+  function appendAgent(html) {
+    const w = document.createElement('div');
+    w.className = 'msg agent';
+    w.innerHTML = `<div class="agent-avatar"></div><div class="bubble">${html}</div>`;
+    chatEl.appendChild(w); scrollChat();
+  }
+  function appendUser(text) {
+    const w = document.createElement('div');
+    w.className = 'msg user';
+    w.innerHTML = `<div class="bubble">${text}</div>`;
+    chatEl.appendChild(w); scrollChat();
+  }
+  function appendNode(node) { chatEl.appendChild(node); scrollChat(); }
+  function scrollChat() { requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; }); }
+
+  /* === Composer === */
+  const composerInput = document.getElementById('composerInput');
+  const composerSend = document.getElementById('composerSend');
+  function sendComposer() {
+    const text = composerInput.value.trim();
+    if (!text) return;
+    appendUser(text); composerInput.value = '';
+  }
+  composerSend.addEventListener('click', sendComposer);
+  composerInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendComposer(); });
+
+  /* === Chat state machine === */
+  let planAdded = false;
+
+  /* ── 동적 플랜 상태 + 체성분 모델 ──
+     체지방량 = 체중×체지방률, 제지방량 = 체중−체지방량,
+     근육량(골격근량) = 제지방량 × 근육비(F .50 / M .55). 세 값이 항상 정합. */
+  const flow = {};
+  const TODAY = new Date(2026, 4, 25);  // 2026-05-25 (데모 기준일)
+  const DAY_MS = 86400000;
+  const dday = (target) => Math.max(0, Math.round((target - TODAY) / DAY_MS));
+  const fmtDate = (d) => d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+  const addMonths = (base, m) => { const d = new Date(base); d.setMonth(d.getMonth()+m); return d; };
+  const MEMORY_EVENTS = [
+    { key:'wedding', title:'My Wedding',     date:new Date(2026,7,15) },
+    { key:'hawaii',  title:'Trip to Hawaii', date:new Date(2026,9,3)  },
+  ];
+  const muscleRatio = (gender) => gender === 'M' ? 0.55 : 0.50;
+  function bodyComp(weight, fatPct, gender) {
+    const fatMass = weight * fatPct / 100;
+    const lean = weight - fatMass;
+    const muscle = lean * muscleRatio(gender);
+    return { fatMass, lean, muscle };
+  }
+  const numFrom = (s) => parseFloat(String(s).replace(/[^0-9.]/g, '')) || 0;
+  function resetChat() {
+    chatEl.innerHTML = '';
+    appendAgent('<p>안녕하세요, 소연님 🌱</p><p>어떤 솔루션을 함께 만들어볼까요?</p>');
+    appendQuickReplies();
+  }
+  function appendQuickReplies() {
+    const div = document.createElement('div');
+    div.className = 'quick-replies';
+    div.innerHTML = `
+      <button class="chip" data-reply="weight">체중감량 솔루션 만들어줘</button>
+      <button class="chip" data-reply="sleep">수면 개선하고 싶어</button>
+    `;
+    appendNode(div);
+    div.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => onQuickReply(c.dataset.reply, c.textContent.trim(), div)));
+  }
+  function onQuickReply(kind, label, qrEl) {
+    qrEl.remove();
+    appendUser(label);
+    setTimeout(() => {
+      if (kind === 'sleep') appendAgent('<p>이번 데모에서는 <strong>체중감량 솔루션</strong>만 시연돼요.</p><p>체중감량으로 진행할게요.</p>');
+      setTimeout(() => {
+        appendAgent('<p>먼저 <strong>현재 상태</strong>를 알려주세요.</p><p>전신사진과 체성분 데이터가 필요해요.</p>');
+        appendStep1();
+      }, kind === 'sleep' ? 450 : 100);
+    }, 350);
+  }
+  function appendStep1() {
+    const card = document.createElement('div');
+    card.className = 'ui-card';
+    card.innerHTML = `
+      <div class="uc-head"><span class="uc-step">Step 1 / 4</span><span class="uc-title">현재 상태</span></div>
+      <button class="photo-slot">
+        <span class="photo-icon"><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
+        <span class="photo-label">전신사진 업로드</span>
+        <span class="photo-skip">건너뛰기</span>
+      </button>
+      <div class="photo-hint">건너뛰면 더미 실루엓으로 진행돼요</div>
+      <div class="uc-section">
+        <div class="uc-section-label">신체 데이터</div>
+        <div class="fields-grid g3">
+          <div class="field"><div class="field-label">체중</div><div class="field-value"><input value="65" data-in="weight"/><span class="field-unit">kg</span></div></div>
+          <div class="field"><div class="field-label">체지방률</div><div class="field-value"><input value="32" data-in="fat"/><span class="field-unit">%</span></div></div>
+          <div class="field"><div class="field-label">근육량</div><div class="field-value"><input value="22" data-in="muscle" readonly title="체중·체지방률에서 자동 산출"/><span class="field-unit">kg</span></div></div>
+          <div class="field"><div class="field-label">키</div><div class="field-value"><input value="168" data-in="height"/><span class="field-unit">cm</span></div></div>
+          <div class="field"><div class="field-label">나이</div><div class="field-value"><input value="34" data-in="age"/><span class="field-unit">세</span></div></div>
+          <div class="field"><div class="field-label">성별</div><div class="seg" data-seg><button class="seg-opt active" data-val="F">F</button><button class="seg-opt" data-val="M">M</button></div></div>
+        </div>
+      </div>
+      <div class="uc-section">
+        <div class="uc-section-label">최근 라이프스타일 평균</div>
+        <div class="fields-grid g2">
+          <div class="field"><div class="field-label">평균 걸음수</div><div class="field-value"><input value="4,200" data-in="steps"/><span class="field-unit">보</span></div></div>
+          <div class="field"><div class="field-label">평균 수면</div><div class="field-value"><input value="5.5" data-in="sleepH"/><span class="field-unit">h</span></div></div>
+          <div class="field"><div class="field-label">수면 점수</div><div class="field-value"><input value="58" data-in="sleepScore"/><span class="field-unit">/100</span></div></div>
+          <div class="field"><div class="field-label">스트레스 지수</div><div class="field-value"><input value="72" data-in="stress"/><span class="field-unit">/100</span></div></div>
+        </div>
+      </div>
+      <button class="uc-confirm" data-confirm="1">확인 완료</button>
+    `;
+    appendNode(card);
+    const getGender = () => card.querySelector('.seg-opt.active')?.dataset.val || 'F';
+    const inEl = (k) => card.querySelector(`[data-in="${k}"]`);
+    // 체중·체지방률·성별 변하면 근육량 자동 재산출 (정합 유지)
+    function recalcMuscle() {
+      const w = numFrom(inEl('weight').value);
+      const f = numFrom(inEl('fat').value);
+      if (w > 0 && f > 0) inEl('muscle').value = bodyComp(w, f, getGender()).muscle.toFixed(1);
+    }
+    inEl('weight').addEventListener('input', recalcMuscle);
+    inEl('fat').addEventListener('input', recalcMuscle);
+    card.querySelector('[data-seg]').querySelectorAll('.seg-opt').forEach(b => {
+      b.addEventListener('click', () => {
+        card.querySelectorAll('.seg-opt').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        recalcMuscle();
+      });
+    });
+    recalcMuscle();
+    card.querySelector('[data-confirm="1"]').addEventListener('click', () => onStep1Confirm(card));
+  }
+  function onStep1Confirm(card) {
+    card.querySelector('[data-confirm="1"]').disabled = true;
+    const inEl = (k) => card.querySelector(`[data-in="${k}"]`);
+    flow.gender = card.querySelector('.seg-opt.active')?.dataset.val || 'F';
+    flow.weight = numFrom(inEl('weight').value);
+    flow.fatPct = numFrom(inEl('fat').value);
+    flow.height = numFrom(inEl('height').value);
+    flow.age    = numFrom(inEl('age').value);
+    flow.steps  = numFrom(inEl('steps').value);
+    flow.sleepH = numFrom(inEl('sleepH').value);
+    flow.sleepScore = numFrom(inEl('sleepScore').value);
+    flow.stress = numFrom(inEl('stress').value);
+    const c = bodyComp(flow.weight, flow.fatPct, flow.gender);
+    flow.muscle = c.muscle; flow.lean = c.lean; flow.fatMass = c.fatMass;
+    appendUser('확인 완료');
+    setTimeout(() => {
+      appendAgent('<p>좋아요. 이제 <strong>목표 체형</strong>을 설정해볼까요?</p><p>슬라이더를 움직이면 신체 파라미터가 실시간으로 바뀌어요.</p>');
+      appendStep2();
+    }, 350);
+  }
+  function appendStep2() {
+    const card = document.createElement('div');
+    card.className = 'ui-card';
+    card.innerHTML = `
+      <div class="uc-head"><span class="uc-step">Step 2 / 4</span><span class="uc-title">목표 체형</span></div>
+      <div class="silhouettes">
+        <div class="silh current">
+          <svg class="silh-svg" viewBox="0 0 60 130" fill="#9aa9ad">
+            <circle cx="30" cy="12" r="8.5"/>
+            <path d="M22 23 Q12 26 11 38 L14 60 Q12 72 17 80 L13 110 L17 130 L27 130 L29 100 L31 100 L33 130 L43 130 L47 110 L43 80 Q48 72 46 60 L49 38 Q48 26 38 23 Z"/>
+          </svg>
+          <span class="silh-caption">현재</span>
+        </div>
+        <div class="silh target">
+          <svg class="silh-svg" viewBox="0 0 60 130">
+            <defs><linearGradient id="gradT" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6fd9b4"/><stop offset="50%" stop-color="#6cd4cc"/><stop offset="100%" stop-color="#6cb8e2"/></linearGradient></defs>
+            <circle cx="30" cy="12" r="8.5" fill="url(#gradT)"/>
+            <path data-target-body fill="url(#gradT)" d="M23 23 Q14 26 13 38 L16 60 Q14 72 18 80 L15 110 L19 130 L27 130 L29 100 L31 100 L33 130 L41 130 L45 110 L42 80 Q46 72 44 60 L47 38 Q46 26 37 23 Z"/>
+          </svg>
+          <span class="silh-caption">목표</span>
+        </div>
+      </div>
+      <div class="comp-row">
+        <div class="comp-cell"><div class="comp-label">체중</div><div class="comp-num" data-w>65<span class="unit">kg</span></div></div>
+        <div class="comp-cell"><div class="comp-label">체지방률</div><div class="comp-num" data-f>32<span class="unit">%</span></div></div>
+        <div class="comp-cell"><div class="comp-label">근육량</div><div class="comp-num" data-m>42<span class="unit">kg</span></div></div>
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-ends"><span>현재 체형</span><span>목표 체형 →</span></div>
+        <input type="range" class="slider" data-slider min="0" max="100" value="25" style="--fill:25%"/>
+      </div>
+      <div class="warn-msg" data-warn hidden>⚠ 50kg 미만은 건강에 위협이 될 수 있어요</div>
+      <button class="uc-confirm" data-confirm="2">이 목표로 확정</button>
+    `;
+    appendNode(card);
+    const slider = card.querySelector('[data-slider]');
+    const w = card.querySelector('[data-w]');
+    const f = card.querySelector('[data-f]');
+    const m = card.querySelector('[data-m]');
+    const warn = card.querySelector('[data-warn]');
+    const bodyPath = card.querySelector('[data-target-body]');
+    const Wc = flow.weight || 65, Fc = flow.fatPct || 32;
+    const baseC = bodyComp(Wc, Fc, flow.gender || 'F');
+    const leanC = flow.lean || baseC.lean;
+    const muscleC = flow.muscle || baseC.muscle;
+    const FLOOR = (flow.gender === 'M') ? 13 : 21;     // 건강 체지방률 하한
+    const tgtFat = Math.max(FLOOR, Fc - 14);           // 슬라이더 최대 시 목표 체지방률
+    const lerp = (a,b,t) => a + (b-a)*t;
+    // 제지방량(=근육 포함)은 유지하고 체지방만 감소 → 세 수치가 항상 정합
+    function goalAt(t) {
+      const gf = lerp(Fc, tgtFat, t);                  // 목표 체지방률
+      const fatMass = leanC * gf / (100 - gf);         // 체지방량 역산
+      return { w: leanC + fatMass, f: gf, m: muscleC };// 체중=제지방+체지방, 근육량 유지
+    }
+    function morph(t) {
+      return `M${lerp(22,23,t)} 23 Q${lerp(12,14,t)} 26 ${lerp(11,13,t)} 38 L${lerp(14,16,t)} 60 Q${lerp(14,16,t)} 72 ${lerp(18,20,t)} 80 L${lerp(13,15,t)} 110 L${lerp(17,19,t)} 130 L27 130 L29 100 L31 100 L33 130 L${lerp(43,41,t)} 130 L${lerp(47,45,t)} 110 L${lerp(42,40,t)} 80 Q${lerp(46,44,t)} 72 ${lerp(46,44,t)} 60 L${lerp(49,47,t)} 38 Q${lerp(48,46,t)} 26 ${lerp(38,37,t)} 23 Z`;
+    }
+    function setN(el, v, unit, changed, warnState) {
+      el.innerHTML = `${v}<span class="unit">${unit}</span>`;
+      el.classList.toggle('changed', changed);
+      el.classList.toggle('warn', !!warnState);
+    }
+    function update() {
+      const t = slider.value/100;
+      slider.style.setProperty('--fill', slider.value+'%');
+      const g = goalAt(t);
+      const wv = Math.round(g.w), fv = Math.round(g.f), mv = Math.round(g.m);
+      const isW = wv < 50 || g.f <= FLOOR + 0.5;
+      setN(w, wv, 'kg', Math.abs(g.w - Wc) >= 0.5, isW);
+      setN(f, fv, '%',  Math.abs(g.f - Fc) >= 0.5, false);
+      setN(m, mv, 'kg', false, false);                 // 근육량 유지(변화 표시 없음)
+      slider.classList.toggle('warn', isW);
+      warn.hidden = !isW;
+      bodyPath.setAttribute('d', morph(t));
+    }
+    slider.addEventListener('input', update);
+    update();
+    card.querySelector('[data-confirm="2"]').addEventListener('click', () => {
+      const g = goalAt(slider.value/100);
+      flow.goalWeight = +g.w.toFixed(1);
+      flow.goalFatPct = +g.f.toFixed(1);
+      flow.goalMuscle = +g.m.toFixed(1);
+      flow.totalLoss  = +(flow.weight - g.w).toFixed(1);
+      onStep2Confirm(card, Math.round(g.w));
+    });
+  }
+  function onStep2Confirm(card, weight) {
+    card.querySelector('[data-confirm="2"]').disabled = true;
+    appendUser(`이 목표로 확정 (▸ ${weight}kg)`);
+    setTimeout(() => {
+      appendAgent('<p>좋아요. 언제까지 달성하고 싶으세요?</p><p>메모리에서 다가오는 이벤트를 찾아봤어요.</p>');
+      appendStep3();
+    }, 350);
+  }
+  function appendStep3() {
+    const card = document.createElement('div');
+    card.className = 'ui-card';
+    const mem = MEMORY_EVENTS.map(e => ({ key:e.key, title:e.title, date:e.date, days:dday(e.date) }));
+    // 프리셋: 메모리 이벤트와 ~14일 이내로 거의 겹치면 제외 → 살아남은 것 중 최대 3개
+    // (예: '3개월 후'가 My Wedding과 비슷하면 빼고 '2개월 후' 같은 대안이 자동으로 채워짐)
+    const cand = [
+      { key:'2m', m:2, title:'2개월 후' }, { key:'3m', m:3, title:'3개월 후' },
+      { key:'4m', m:4, title:'4개월 후' }, { key:'6m', m:6, title:'6개월 후' },
+      { key:'1y', m:12, title:'1년 후' },
+    ];
+    const presets = [];
+    for (const c of cand) {
+      const date = addMonths(TODAY, c.m), days = dday(date);
+      if (mem.some(e => Math.abs(e.days - days) <= 14)) continue;   // 메모리와 거의 동일 → 스킵
+      presets.push({ key:c.key, title:c.title, date, days });
+      if (presets.length >= 3) break;
+    }
+    const optHTML = (o, sel) => `<label class="date-opt${sel?' selected':''}" data-key="${o.key}" data-days="${o.days}"><input type="radio" name="t"${sel?' checked':''}/><div class="date-body"><div class="date-title">${o.title}</div><div class="date-sub">${fmtDate(o.date)}</div></div><div class="date-day">D-${o.days}</div><div class="date-bullet"></div></label>`;
+    card.innerHTML = `
+      <div class="uc-head"><span class="uc-step">Step 3 / 4</span><span class="uc-title">타겟 날짜</span></div>
+      <div class="uc-section" style="margin-top:8px">
+        <div class="uc-section-label">메모리에서</div>
+        <div class="date-list">${mem.map((o,i)=>optHTML(o, i===0)).join('')}</div>
+      </div>
+      <div class="uc-section">
+        <div class="uc-section-label">프리셋</div>
+        <div class="date-list">${presets.map(o=>optHTML(o, false)).join('')}</div>
+      </div>
+      <button class="uc-confirm" data-confirm="3">다음</button>
+    `;
+    appendNode(card);
+    card.querySelectorAll('.date-opt').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.preventDefault();
+        card.querySelectorAll('.date-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input').checked = true;
+      });
+    });
+    card.querySelector('[data-confirm="3"]').addEventListener('click', () => onStep3Confirm(card));
+  }
+  function onStep3Confirm(card) {
+    card.querySelector('[data-confirm="3"]').disabled = true;
+    const sel = card.querySelector('.date-opt.selected');
+    const title = sel.querySelector('.date-title').textContent;
+    const day = sel.querySelector('.date-day').textContent;
+    flow.targetDays = parseInt(sel.dataset.days, 10) || numFrom(day);
+    flow.targetTitle = title;
+    appendUser(`▸ ${title} (${day})`);
+    setTimeout(() => {
+      appendAgent('<p>데이터를 분석해서 플랜을 만들었어요.</p><p>견적을 확인해보세요.</p>');
+      appendStep4();
+    }, 350);
+  }
+  // 플랜 역산: 1kg≈7700kcal, 현재 활동/수면/스트레스로 카테고리 목표·병목 판정
+  function computePlan() {
+    const days = Math.max(1, flow.targetDays || 90);
+    const totalLoss = Math.max(0, flow.totalLoss || 0);
+    const dailyDeficit = Math.round(totalLoss * 7700 / days);
+    const weeklyLoss = +(totalLoss / (days / 7)).toFixed(1);
+    const sedentary = flow.steps < 6000;
+    const burnKcal = Math.round(dailyDeficit * (sedentary ? 0.6 : 0.4));
+    const stepTarget = Math.max(6000, Math.round(flow.steps + burnKcal / 0.04 / 2));
+    const sleepBottleneck = flow.sleepH < 6 || flow.sleepScore < 65;
+    const sleepHTarget = flow.sleepH < 6 ? 7 : flow.sleepH < 7 ? +(Math.max(7, flow.sleepH + 0.5)).toFixed(1) : +flow.sleepH.toFixed(1);
+    const sleepScoreTarget = flow.sleepScore < 65 ? 70 : Math.max(70, flow.sleepScore);
+    const stressBottleneck = flow.stress > 65;
+    const stressMax = flow.stress > 70 ? 60 : flow.stress > 65 ? 65 : 60;
+    const mid1 = Math.round(days / 3), mid2 = Math.round(days * 2 / 3);
+    return { days, totalLoss, dailyDeficit, weeklyLoss, sedentary, burnKcal, stepTarget,
+      sleepBottleneck, sleepHTarget, sleepScoreTarget, stressBottleneck, stressMax, mid1, mid2,
+      fat: Math.round(flow.fatPct), goalFat: Math.round(flow.goalFatPct) };
+  }
+  function appendStep4() {
+    const card = document.createElement('div');
+    card.className = 'ui-card';
+    const p = computePlan();
+    const bn = '<span class="cat-bottleneck">병목</span>';
+    const pos1 = (p.mid1 / p.days * 100).toFixed(1), pos2 = (p.mid2 / p.days * 100).toFixed(1);
+    card.innerHTML = `
+      <div class="uc-head"><span class="uc-step">Step 4 / 4</span><span class="uc-title">플랜 견적</span></div>
+      <div class="plan-hero">
+        <div class="plan-eyebrow">체중감량 플랜</div>
+        <div class="plan-title">${p.totalLoss}kg 가벼워지기</div>
+        <div class="plan-summary">기간 <strong>${p.days}일</strong> · 체지방 <strong>${p.fat}% → ${p.goalFat}%</strong> · 일일 적자 <strong>${p.dailyDeficit}kcal</strong></div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="cat-list">
+        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 태우기</span>${p.sedentary?bn:''}</div><div class="cat-target">매일 <strong>+${p.burnKcal}kcal</strong> · 목표 <strong>${p.stepTarget.toLocaleString()}보</strong></div><div class="cat-current">현재 ${flow.steps.toLocaleString()}보</div></div></div>
+        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 자기</span>${p.sleepBottleneck?bn:''}</div><div class="cat-target"><strong>${p.sleepHTarget}시간</strong> · 수면 점수 <strong>${p.sleepScoreTarget}↑</strong></div><div class="cat-current">현재 ${flow.sleepH}h · ${flow.sleepScore}점</div></div></div>
+        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 빠지기</span></div><div class="cat-target">주 <strong>-${p.weeklyLoss}kg</strong> · 체중계 연동 권장</div></div></div>
+        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 버티기</span>${p.stressBottleneck?bn:''}</div><div class="cat-target">스트레스 <strong>${p.stressMax}↓</strong></div><div class="cat-current">현재 ${flow.stress}</div></div></div>
+      </div>
+      <div class="plan-checkpoint">
+        <div class="timeline">
+          <div class="tl-line"></div>
+          <div class="tl-node tl-start"><span class="tl-dot"></span><span class="tl-day">D-${p.days}</span><span class="tl-label">오늘</span></div>
+          <div class="tl-node" style="left: ${pos1}%"><span class="tl-dot tl-dot-mile"></span><span class="tl-day">D-${p.days-p.mid1}</span><span class="tl-label">중간점검</span></div>
+          <div class="tl-node" style="left: ${pos2}%"><span class="tl-dot tl-dot-mile"></span><span class="tl-day">D-${p.days-p.mid2}</span><span class="tl-label">중간점검</span></div>
+          <div class="tl-node tl-end"><span class="tl-dot"></span><span class="tl-day">D-0</span><span class="tl-label">목표</span></div>
+        </div>
+      </div>
+      <div class="plan-actions">
+        <button class="uc-confirm" data-confirm="4">이 플랜으로 시작</button>
+        <div class="plan-secondary"><button class="btn-ghost">↑ 목표 올리기</button><button class="btn-ghost">↓ 목표 낮추기</button></div>
+      </div>
+    `;
+    appendNode(card);
+    card.querySelector('[data-confirm="4"]').addEventListener('click', () => onStep4Confirm(card));
+  }
+  function onStep4Confirm(card) {
+    card.querySelector('[data-confirm="4"]').disabled = true;
+    appendUser('이 플랜으로 시작');
+    setTimeout(() => {
+      appendAgent('<p>플랜이 저장됐어요.</p><p>홈에서 매일 함께 지켜볼게요. 🌱</p>');
+      if (!planAdded) { addNewPlanCard(); updateDashNewCard(); planAdded = true; }
+      setTimeout(() => showScreen('screen-home'), 900);
+    }, 350);
+  }
+
+  function addNewPlanCard() {
+    const list = document.getElementById('solList');
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.dataset.key = 'newplan';
+    item.innerHTML = `
+      <div class="li-row1">
+        <div class="li-title"><span class="li-new">New</span>${(flow.totalLoss||5)}kg 가벼워지기</div>
+        <div class="li-pct-wrap"><span class="li-pct">0%</span><span class="li-bar"><i style="width:0%"></i></span></div>
+      </div>
+      <div class="li-row2"><span class="li-meta">D-${(flow.targetDays||86)}</span><span class="li-cat">${flow.targetTitle||'목표일'}</span></div>
+      <div class="li-detail"><div class="inline-nudge" data-nudge></div></div>
+    `;
+    list.insertBefore(item, list.firstChild);
+    document.getElementById('solCount').textContent = '3';
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.inline-nudge, button')) return;
+      item.classList.toggle('open');
+      if (item.classList.contains('open') && !item.querySelector('.in-top')) {
+        nudgeMount = item.querySelector('[data-nudge]');
+        renderNudge();
+      }
+    });
+  }
+
+  /* === Inline nudge cycling === */
+  const NUDGES = [
+    { cat: '잘 태우기 · 위협 감지',  time: '오후 5:42',
+      title: '최근 3일, 걸음수가 목표의 60%예요.',
+      body: '오늘 퇴근길에 한 정거장 먼저 내려 걸어볼까요? 8,000보까지 약 1,200보 남았어요.' },
+    { cat: '잘 쉬기 · 위협 감지',  time: '밤 10:18',
+      title: '수면 점수가 2일째 60 이하예요.',
+      body: '오늘은 30분만 일찍 침대로 가볼까요? 11시에 무드등을 자동으로 낮춰드릴게요.' },
+    { cat: '잘 빠지기 · 위협 감지', time: '오전 9:05',
+      title: '주간 감량 페이스가 목표의 40%예요.',
+      body: '오늘 저녁은 단백질 위주로 가볍게 어떠세요? 식단 사진 한 장으로 기록해두면 좋아요.' },
+    { cat: '잘 버티기 · 위협 감지',  time: '오후 3:21',
+      title: '스트레스 지수가 2일째 70을 넘었어요.',
+      body: '잠깐 멈춰서 5분 호흡 명상 어떠세요? 흔들리는 마음을 가라앉히는 데 도움이 돼요.' },
+  ];
+  let nudgeIdx = 0;
+  let nudgeMount = document.querySelector('[data-nudge]');
+  function renderNudge() {
+    const n = NUDGES[nudgeIdx];
+    nudgeMount.innerHTML = `
+      <div class="in-top">
+        <span class="in-dot"></span>
+        <span class="in-cat">${n.cat}</span>
+        <span class="in-time">${n.time}</span>
+        <button class="in-switch" title="맥락 바꾸기">맥락 ↻</button>
+      </div>
+      <div class="in-title">${n.title}</div>
+      <div class="in-body">${n.body}</div>
+      <div class="in-actions">
+        <button class="in-btn in-do">했어요</button>
+        <button class="in-btn in-skip">나중에</button>
+      </div>
+    `;
+    nudgeMount.querySelector('.in-switch').addEventListener('click', (e) => {
+      e.stopPropagation();
+      nudgeIdx = (nudgeIdx + 1) % NUDGES.length;
+      renderNudge();
+    });
+    nudgeMount.querySelector('.in-do').addEventListener('click', (e) => {
+      e.stopPropagation();
+      onNudgeDone(nudgeIdx);   // 미션 완료 → 갤러리에 보상 추가 + 대시보드로 전환
+    });
+    nudgeMount.querySelector('.in-skip').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const item = nudgeMount.closest('.list-item');
+      if (item) item.classList.remove('open');
+    });
+  }
+  if (nudgeMount) renderNudge();
+
+  /* === Tap list row to expand/collapse === */
+  document.querySelectorAll('.list-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.inline-nudge, button')) return;
+      item.classList.toggle('open');
+    });
+  });
+
+  /* === Chat scroll to bottom on entering === */
+  document.getElementById('enterChat').addEventListener('click', () => {
+    requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; });
+  });
+
+  /* ============================================================
+     Dashboard — 3D 테마 갤러리 통합 (iframe lazy 로드 · 테마 도트 · 보상 플로우)
+     ============================================================ */
+  const THEMES = [
+    { id: 'museum', name: 'Slow Museum' },
+    { id: 'planet', name: 'Bloom Planet' },
+    { id: 'marble', name: 'Wellness Marble' },
+  ];
+  let activeTheme = 'museum';
+  let missionsDone = 0;
+  let execScore = 0;   // 솔루션 수행(이행)점수 — '했어요'마다 +2
+
+  // 수행점수 +2 → 대시보드 1×1 카드 점수 + 홈 새 솔루션 카드 % 동기화
+  function bumpExecScore() {
+    execScore = Math.min(100, execScore + 2);
+    const dashCard = document.getElementById('dash-new-card');
+    if (dashCard && !dashCard.classList.contains('scard-new')) {
+      const s = dashCard.querySelector('.s-score');
+      if (s) s.textContent = execScore;
+    }
+    const item = document.querySelector('.list-item[data-key="newplan"]');
+    if (item) {
+      const pct = item.querySelector('.li-pct'); if (pct) pct.textContent = execScore + '%';
+      const bar = item.querySelector('.li-bar i'); if (bar) bar.style.width = execScore + '%';
+    }
+  }
+
+  /* 각 테마 iframe에 주입: 배경 투명·컨트롤 패널/내부 점수카드 숨김·라운딩 제거(부모 .phone이 36px 클립) */
+  const FRAME_INJECT_CSS = `
+    html, body { background: transparent !important; }
+    body { padding: 0 !important; margin: 0 !important; overflow: hidden !important; display: block !important; }
+    main { padding: 0 !important; transform: none !important; display: block !important; }
+    #sliders, .control-panel, #control-panel, #controls, aside, .sliders, .panel-right { display: none !important; }
+    #cards, .cards, .score-cards, .card-row { display: none !important; }
+    /* 콘텐츠를 프레임 좌상단에 고정 (중앙정렬로 밀리던 상단여백/오프셋 제거) */
+    #canvas-wrap, .phone, .mobile-frame { position: absolute !important; top: 0 !important; left: 0 !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+    /* 테마 제목을 솔루션 화면 제목과 동일 위치로 (전환 시 흔들림 제거) + '소연님의' 줄바꿈 */
+    #phone-title { top: 66px !important; left: 24px !important; }
+    #phone-title .pt-eyebrow { display: block !important; }
+  `;
+
+  function applyActiveTheme() {
+    document.getElementById('phone').dataset.theme = activeTheme;   // 글래스 토큰 전환
+    const loading = document.getElementById('museum-loading');
+    document.querySelectorAll('.museum-frame').forEach(f => {
+      const isActive = f.dataset.theme === activeTheme;
+      f.classList.toggle('active', isActive);
+      if (isActive) {
+        if (!f.src && f.dataset.src) { if (loading) loading.hidden = false; f.src = f.dataset.src; }
+        else if (loading) loading.hidden = true;
+      }
+    });
+  }
+  function updateThemeDots() {
+    document.querySelectorAll('#theme-dots .theme-dot').forEach(d => {
+      const on = d.dataset.theme === activeTheme;
+      d.classList.toggle('active', on);
+      d.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+  function setupMuseumIframes() {
+    document.querySelectorAll('.museum-frame').forEach(frame => {
+      frame.addEventListener('load', () => {
+        try {
+          const doc = frame.contentDocument;
+          if (doc && !doc.querySelector('style[data-injected]')) {
+            const s = doc.createElement('style');
+            s.setAttribute('data-injected', '1');
+            s.textContent = FRAME_INJECT_CSS;
+            doc.head.appendChild(s);
+          }
+        } catch (e) { /* same-origin local file */ }
+        const loading = document.getElementById('museum-loading');
+        if (loading && frame.classList.contains('active')) loading.hidden = true;
+        // pause race 방지: 로딩 완료 시 대시보드가 아니면 즉시 일시정지
+        if (!document.getElementById('screen-dashboard').classList.contains('active')) {
+          try { frame.contentWindow.__pauseRender && frame.contentWindow.__pauseRender(); } catch (e) {}
+        }
+      });
+    });
+    applyActiveTheme();
+  }
+
+  /* 테마 도트 생성 */
+  (function buildThemeDots() {
+    const wrap = document.getElementById('theme-dots');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    THEMES.forEach(t => {
+      const dot = document.createElement('button');
+      dot.className = 'theme-dot';
+      dot.dataset.theme = t.id;
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', t.name);
+      dot.addEventListener('click', () => {
+        if (activeTheme === t.id) return;
+        activeTheme = t.id;
+        applyActiveTheme();
+        updateThemeDots();
+      });
+      wrap.appendChild(dot);
+    });
+    updateThemeDots();
+  })();
+
+  /* 미션 완료 → 갤러리에 보상 추가 + 대시보드로 전환
+     1번째 → thrower(슬롯1), 2번째 → nike(슬롯0), 3번째 이후 → 그림 */
+  function onNudgeDone(catIdx) {
+    missionsDone += 1;
+    bumpExecScore();          // 수행점수 +2
+    const n = missionsDone;
+    if (activeTheme !== 'museum') { activeTheme = 'museum'; applyActiveTheme(); updateThemeDots(); }
+    const frame = document.querySelector('.museum-frame[data-theme="museum"]');
+    const gallery = frame && frame.contentWindow && frame.contentWindow.gallery;
+    if (gallery) {
+      if (n === 1) gallery.addSculpture(1, 'thrower');
+      else if (n === 2) gallery.addSculpture(0, 'nike');
+      else gallery.addPainting();
+    }
+    showScreen('screen-dashboard');
+  }
+
+  /* 탭바: 대시보드 ↔ 실험실 */
+  document.querySelectorAll('.tab[data-screen]').forEach(btn => {
+    btn.addEventListener('click', () => showScreen(btn.dataset.screen));
+  });
+
+  /* 대시보드 NEW 카드 → 솔루션 만들기(챗) 진입 (이미 생성된 카드면 무시) */
+  document.getElementById('dash-new-card')?.addEventListener('click', () => {
+    const card = document.getElementById('dash-new-card');
+    if (!card.classList.contains('scard-new')) return;   // 생성 완료된 솔루션 카드면 진입 안 함
+    resetChat();
+    showScreen('screen-chat');
+  });
+
+  /* 솔루션 생성 완료 → 대시보드 1×1 카드를 '생성된 솔루션' 카드로 교체.
+     NEW 태그가 다른 카드처럼 하단좌측 정렬되도록 scard-new 클래스 제거(상단 고정 해제). */
+  function updateDashNewCard() {
+    const card = document.getElementById('dash-new-card');
+    if (!card) return;
+    card.classList.remove('scard-new');
+    card.style.cursor = 'default';
+    card.innerHTML =
+      '<div class="s-title">' + (flow.totalLoss || 5) + 'kg 가벼워지기</div>' +
+      '<span class="s-tag s-tag-new">NEW</span>' +
+      '<div class="s-score">0</div>';
+  }
+
+  /* showScreen 래핑: 대시보드 진입 시 활성 iframe RAF 재개, 떠나면 일시정지 (lag 방지) */
+  const _origShowScreen = showScreen;
+  showScreen = function (id) {
+    _origShowScreen(id);
+    const active = document.querySelector('.museum-frame.active');
+    const fn = (id === 'screen-dashboard') ? '__resumeRender' : '__pauseRender';
+    try { active && active.contentWindow && active.contentWindow[fn] && active.contentWindow[fn](); } catch (e) {}
+  };
+
+  /* 초기화: 대시보드 시작 + 활성 테마 iframe 로드 */
+  setupMuseumIframes();
+  showScreen('screen-dashboard');
+</script>
+</body>
+</html>
