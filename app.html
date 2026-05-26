@@ -1681,15 +1681,13 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     function drawWarp(cv, img, amt) {
       const ctx = cv.getContext('2d');
       const W = cv.width, H = cv.height;
-      // 압축으로 생기는 좌우 여백 = 라이트 그레이 (배경 그라데이션 대신)
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = '#e9ecee';
-      ctx.fillRect(0, 0, W, H);
       const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
       if (!iw || !ih) return;
       const scale = Math.max(W / iw, H / ih);     // cover fit
       const dw = iw * scale, dh = ih * scale;
       const dy = (H - dh) / 2;
+      const srcH = Math.max(1, 1 / scale);
       for (let y = 0; y < H; y++) {
         const r = y / H;
         // 부드러운 단일 가우시안 압축 — 허리(0.53) 중심, 넓고 완만하게 전신에 분포.
@@ -1700,7 +1698,12 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         if (srcY < 0 || srcY >= ih) continue;
         const destW = dw * comp;
         const ox = (W - destW) / 2;
-        ctx.drawImage(img, 0, srcY, iw, Math.max(1, 1 / scale), ox, y, destW, 1);
+        // 압축으로 생긴 좌우 여백은 해당 행의 사진 끝단 색을 늘려 채움(edge extend) → 배경과 자연스럽게 연결
+        if (ox > 0) {
+          ctx.drawImage(img, 0, srcY, 1, srcH, 0, y, ox + 1, 1);                 // 좌측: 맨 왼쪽 1px 확장
+          ctx.drawImage(img, iw - 1, srcY, 1, srcH, ox + destW - 1, y, W - (ox + destW) + 1, 1); // 우측: 맨 오른쪽 1px 확장
+        }
+        ctx.drawImage(img, 0, srcY, iw, srcH, ox, y, destW, 1);                  // 본체
       }
     }
 
