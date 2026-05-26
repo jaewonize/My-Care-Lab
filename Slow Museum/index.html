@@ -647,6 +647,16 @@ const EXHIBIT = {
 const MANAGE_HEIGHT_KEEP = { HK1: 1, HK2: 1, rothko_1: 1, rothko_2: 1 };  // height-fit 1.9 (mat 포함시 원화면적 유지)
 
 /* 액자 1개에 그림 로드 — 초기/런타임 공용. entry는 'name' 또는 'name!'(keep). */
+const _preTex = {};   // 'zk/entry' → 프리로드된 텍스처 (빈 액자 채울 이미지)
+function _applyPaintingTex(f, zk, name, tex, fadeIn) {
+  const z = EXHIBIT[zk];
+  const iw = tex.image.naturalWidth || tex.image.width;
+  const ih = tex.image.naturalHeight || tex.image.height;
+  const aspect = iw / ih;
+  if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
+  else fitFrameByArea(f, tex, aspect, z.area);
+  if (fadeIn && f.userData.art) registerFade(f.userData.art, 1.2);   // 조각과 동일 1.2s 페이드 인
+}
 function _loadPaintingToFrame(f, zk, entry, fadeIn) {
   const z = EXHIBIT[zk];
   const keep = entry.charAt(entry.length - 1) === '!';
@@ -654,15 +664,11 @@ function _loadPaintingToFrame(f, zk, entry, fadeIn) {
   f.userData._art = name;
   f.userData._entry = entry;
   f.userData._empty = false;
-  const src = 'asset/' + z.dir + '/' + name + '.jpg';
-  texLoader.load(src, tex => {
+  const pre = _preTex[zk + '/' + entry];
+  if (pre && pre.image) { _applyPaintingTex(f, zk, name, pre, fadeIn); return; }   // 프리로드됨 → 즉시(지연 없음)
+  texLoader.load('asset/' + z.dir + '/' + name + '.jpg', tex => {
     tex.encoding = THREE.sRGBEncoding;
-    const iw = tex.image.naturalWidth || tex.image.width;
-    const ih = tex.image.naturalHeight || tex.image.height;
-    const aspect = iw / ih;
-    if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
-    else fitFrameByArea(f, tex, aspect, z.area);
-    if (fadeIn && f.userData.art) registerFade(f.userData.art, 0.8);   // 0.8s 페이드 인. 등장 타이밍은 부모가 제어
+    _applyPaintingTex(f, zk, name, tex, fadeIn);
   }, undefined, err => console.error(zk + ' load failed:', name, err));
 }
 
@@ -685,9 +691,21 @@ Object.keys(EXHIBIT).forEach(zk => {
     if (emptySet.has(i)) {
       f.userData._empty = true;
       f.userData._zone = zk;
+      f.userData._designatedEntry = entry;   // 이 빈 슬롯에 채워질 예정 이미지(스킵된 turnSeq 항목)
       return;
     }
     _loadPaintingToFrame(f, zk, entry);
+  });
+});
+// 빈 액자에 채워질 이미지 텍스처를 미리 로드 → addPainting 시 조각처럼 즉시 표시(지연 균일화)
+Object.keys(EXHIBIT).forEach(zk => {
+  const z = EXHIBIT[zk];
+  zones[zk].items.forEach(f => {
+    const entry = f.userData._designatedEntry;
+    if (f.userData._empty && entry) {
+      const name = entry.replace(/!$/, '');
+      texLoader.load('asset/' + z.dir + '/' + name + '.jpg', tex => { tex.encoding = THREE.sRGBEncoding; _preTex[zk + '/' + entry] = tex; });
+    }
   });
 });
 
@@ -1330,11 +1348,15 @@ window.gallery = {
       }
     }
     if (!f) return null;
-    const z = EXHIBIT[zk];
-    const shownEntries = new Set(zones[zk].items.map(it => it.userData._entry).filter(Boolean));
-    const candidates = z.seq.filter(s => !shownEntries.has(s));
-    if (!candidates.length) return null;
-    const entry = candidates[Math.floor(Math.random() * candidates.length)];
+    // 지정(프리로드된) 이미지 우선 사용 → 즉시 표시. 없으면 미사용 항목 무작위.
+    let entry = f.userData._designatedEntry;
+    if (!entry) {
+      const z = EXHIBIT[zk];
+      const shownEntries = new Set(zones[zk].items.map(it => it.userData._entry).filter(Boolean));
+      const candidates = z.seq.filter(s => !shownEntries.has(s));
+      if (!candidates.length) return null;
+      entry = candidates[Math.floor(Math.random() * candidates.length)];
+    }
     _loadPaintingToFrame(f, zk, entry, true);   // fade-in
     return { zone: zk, name: entry.replace(/!$/, '') };
   },

@@ -54,11 +54,12 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   html.embed body { display: flex; align-items: center; justify-content: center; }
   html.embed .stage-label { display: none; }
   html.embed .phone { box-shadow: none; }
-  /* 시연자용 갤러리 리셋 — 1×2 점수 카드 위, 우측 정렬. 기호만(눈에 안 띄게) */
+  /* 시연자용 갤러리 리셋 — 1×2 점수 카드 위, 우측 정렬. 기호만(눈에 안 띄게).
+     Slow Museum 테마에서만 노출 (planet·marble은 아직 보상 초기화 대상 아님). */
   .gallery-reset {
     position: absolute; right: 16px; bottom: 296px; z-index: 6;
     width: 24px; height: 24px; border-radius: 50%;
-    display: grid; place-items: center;
+    display: none; place-items: center;
     background: rgba(255,255,255,.32);
     border: 1px solid rgba(80,72,66,.16);
     color: rgba(80,72,66,.7); font-size: 13px; line-height: 1;
@@ -66,6 +67,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     transition: opacity .15s, background .15s;
   }
+  #phone[data-theme="museum"] .gallery-reset { display: grid; }
   .gallery-reset:hover { opacity: 1; background: rgba(255,255,255,.7); }
 
   /* ============================================================
