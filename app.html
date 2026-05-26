@@ -770,8 +770,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     font-size: 26px;
     font-weight: 800;
     letter-spacing: -.5px;
-    line-height: 1.25;
-    padding-right: 4px;
+    line-height: 1.35;
+    padding: 0 4px 5px 0;   /* background-clip:text 디센더(g·기) 잘림 방지 */
     word-break: keep-all;
     background: var(--gradient-key);
     -webkit-background-clip: text;
@@ -1803,7 +1803,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     flow.targetTitle = title;
     appendUser(`▸ ${title} (D-${days})`);
     setTimeout(() => {
-      appendAgent('<p>데이터를 분석해서 플랜을 만들었어요.</p><p>견적을 확인해보세요.</p>');
+      appendAgent('<p>데이터를 분석해서 플랜을 만들었어요.</p><p>시안을 확인해보세요.</p>');
       appendStep4();
     }, 350);
   }
@@ -1833,7 +1833,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const bn = '<span class="cat-bottleneck">병목</span>';
     const pos1 = (p.mid1 / p.days * 100).toFixed(1), pos2 = (p.mid2 / p.days * 100).toFixed(1);
     card.innerHTML = `
-      <div class="uc-head"><span class="uc-step">Step 4 / 4</span><span class="uc-title">플랜 견적</span></div>
+      <div class="uc-head"><span class="uc-step">Step 4 / 4</span><span class="uc-title">플랜 시안</span></div>
       <div class="plan-hero">
         <div class="plan-eyebrow">체중감량 플랜</div>
         <div class="plan-title">${p.totalLoss}kg 가벼워지기</div>
