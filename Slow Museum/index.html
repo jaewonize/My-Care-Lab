@@ -647,7 +647,7 @@ const EXHIBIT = {
 const MANAGE_HEIGHT_KEEP = { HK1: 1, HK2: 1, rothko_1: 1, rothko_2: 1 };  // height-fit 1.9 (mat 포함시 원화면적 유지)
 
 /* 액자 1개에 그림 로드 — 초기/런타임 공용. entry는 'name' 또는 'name!'(keep). */
-function _loadPaintingToFrame(f, zk, entry) {
+function _loadPaintingToFrame(f, zk, entry, fadeIn) {
   const z = EXHIBIT[zk];
   const keep = entry.charAt(entry.length - 1) === '!';
   const name = keep ? entry.slice(0, -1) : entry;
@@ -662,6 +662,7 @@ function _loadPaintingToFrame(f, zk, entry) {
     const aspect = iw / ih;
     if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
     else fitFrameByArea(f, tex, aspect, z.area);
+    if (fadeIn && f.userData.art) registerFade(f.userData.art);   // 새 그림 페이드 인
   }, undefined, err => console.error(zk + ' load failed:', name, err));
 }
 
@@ -669,7 +670,11 @@ function _loadPaintingToFrame(f, zk, entry) {
    - groom(초상화/정면 벽): 4슬롯 모두 채움
    - rest(풍경/왼쪽 벽), manage(추상/오른쪽 벽): slot 1·3 빈 액자
    빈 액자는 런타임에 window.gallery.addPainting()으로 채움. */
-const EMPTY_SLOTS_BY_ZONE = { groom: new Set(), rest: new Set([1, 3]), manage: new Set([1, 3]) };
+// My Care Lab 데모: 초기 빈 액자 3개 (미션 3·4·5에서 차례로 채워짐)
+//  - groom(전면 초상화): 왼쪽에서 두 번째 (slot 1)        → 미션 3
+//  - rest(왼쪽 풍경화): 제일 안쪽 (slot 3, z=-7.2)        → 미션 4
+//  - manage(오른쪽 추상화): 제일 안쪽 (slot 3, z=-7.2)    → 미션 5
+const EMPTY_SLOTS_BY_ZONE = { groom: new Set([1]), rest: new Set([3]), manage: new Set([3]) };
 Object.keys(EXHIBIT).forEach(zk => {
   const z = EXHIBIT[zk];
   const turnSeq = z.seq.slice((TURN - 1) * 4, TURN * 4);
@@ -690,7 +695,7 @@ Object.keys(EXHIBIT).forEach(zk => {
 const gltfLoader = new THREE.GLTFLoader();
 if (window.MeshoptDecoder) gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 const _sbox = new THREE.Box3(), _ssz = new THREE.Vector3(), _sctr = new THREE.Vector3();
-function _loadSculptureToPed(ped) {
+function _loadSculptureToPed(ped, fadeIn) {
   const name = ped.userData._sculpt;
   if (!name) return;
   const adj = SCULPT_ADJ[name] || { scale: 1, ry: 0 };
@@ -723,6 +728,7 @@ function _loadSculptureToPed(ped) {
       }
     });
     ped.add(m);
+    if (fadeIn) registerFade(m);   // 새 조각 페이드 인
     // ── 조각별 개별 스포트라이트 (광원 자체는 비표시 — SpotLight는 지오메트리 없음) ──
     const _wb = new THREE.Box3().setFromObject(m);
     const _wc = _wb.getCenter(new THREE.Vector3());
@@ -1158,12 +1164,36 @@ let _last = performance.now();
 let _paused = false;
 window.__pauseRender = () => { _paused = true; };
 window.__resumeRender = () => { if (_paused) { _paused = false; _last = performance.now(); animate(); } };
+// ── 보상 등장 fade-in (런타임 추가 시에만) ──
+const _fading = [];
+function registerFade(root, dur = 0.8) {
+  const mats = [];
+  root.traverse(o => {
+    if (o.isMesh) {
+      const ms = Array.isArray(o.material) ? o.material : [o.material];
+      ms.forEach(m => { if (m && m.opacity !== undefined) { m.transparent = true; m.opacity = 0; mats.push(m); } });
+    }
+  });
+  if (mats.length) _fading.push({ mats, t: 0, dur });
+}
+function updateFades(dt) {
+  for (let i = _fading.length - 1; i >= 0; i--) {
+    const f = _fading[i];
+    f.t += dt;
+    const k = Math.min(1, f.t / f.dur);
+    const e = 1 - Math.pow(1 - k, 3);   // easeOutCubic
+    f.mats.forEach(m => { m.opacity = e; });
+    if (k >= 1) _fading.splice(i, 1);
+  }
+}
+
 function animate() {
   if (_paused) return;   // 일시정지 시 RAF 체인 끊음 → CPU/GPU 부담 0
   requestAnimationFrame(animate);
   const now = performance.now();
   const dt = Math.min((now - _last) / 1000, 0.05);
   _last = now;
+  updateFades(dt);
   if (tween) {
     tween.t = Math.min(1, tween.t + dt / tween.dur);
     const e = easeInOut(tween.t);
@@ -1268,22 +1298,26 @@ window.gallery = {
     const ped = zones.move.items[slotIdx];
     if (!ped || ped.userData._sculpt) return false;
     ped.userData._sculpt = name;
-    _loadSculptureToPed(ped);
+    _loadSculptureToPed(ped, true);   // fade-in
     return true;
   },
-  addPainting() {
+  addPainting(preferZone) {
     const pickZone = (zk) => {
-      const empties = zones[zk].items.filter(f => f.userData._empty);
+      const empties = zones[zk] ? zones[zk].items.filter(f => f.userData._empty) : [];
       return empties.length ? empties[Math.floor(Math.random() * empties.length)] : null;
     };
-    // 우선 portrait(groom), 그 다음 random
-    let f = pickZone('groom');
-    let zk = 'groom';
+    let zk = null, f = null;
+    // 지정 벽이 있으면 거기서 먼저
+    if (preferZone) { f = pickZone(preferZone); if (f) zk = preferZone; }
+    // 없으면 portrait(groom) 우선, 그 다음 random
     if (!f) {
-      const others = ['rest', 'manage'].filter(k => zones[k].items.some(it => it.userData._empty));
-      if (!others.length) return null;
-      zk = others[Math.floor(Math.random() * others.length)];
-      f = pickZone(zk);
+      f = pickZone('groom'); zk = 'groom';
+      if (!f) {
+        const others = ['rest', 'manage'].filter(k => zones[k].items.some(it => it.userData._empty));
+        if (!others.length) return null;
+        zk = others[Math.floor(Math.random() * others.length)];
+        f = pickZone(zk);
+      }
     }
     if (!f) return null;
     const z = EXHIBIT[zk];
@@ -1291,7 +1325,7 @@ window.gallery = {
     const candidates = z.seq.filter(s => !shownEntries.has(s));
     if (!candidates.length) return null;
     const entry = candidates[Math.floor(Math.random() * candidates.length)];
-    _loadPaintingToFrame(f, zk, entry);
+    _loadPaintingToFrame(f, zk, entry, true);   // fade-in
     return { zone: zk, name: entry.replace(/!$/, '') };
   },
   getCounts() {

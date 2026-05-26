@@ -806,53 +806,24 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   }
   .plan-summary strong { color: var(--ink); font-weight: 700; }
   .plan-divider { height: 1px; background: rgba(20,60,70,.10); margin: 8px 0 14px; }
-  .cat-list { display: flex; flex-direction: column; gap: 14px; }
-  .cat-row { display: flex; gap: 12px; align-items: flex-start; }
-  .cat-bullet {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--gradient-key);
-    margin-top: 6px;
-    flex: 0 0 8px;
-    box-shadow: 0 0 0 3px rgba(108, 212, 204, .14);
+  /* 플랜 견적 4카테고리 — 핵심 수치만 컴팩트 2×2 */
+  .plan-cats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .plan-cat {
+    background: rgba(255,255,255,.5);
+    border: 1px solid rgba(20,60,70,.06);
+    border-radius: 12px;
+    padding: 11px 13px;
+    display: flex; flex-direction: column; gap: 4px;
   }
-  .cat-body { flex: 1 1 auto; min-width: 0; }
-  .cat-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-  .cat-name {
+  .plan-cat .pc-name {
     font-family: "Noto Sans KR", sans-serif;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--ink);
+    font-size: 11.5px; font-weight: 700; color: var(--ink-3);
     letter-spacing: -.2px;
   }
-  .cat-bottleneck {
+  .plan-cat .pc-val {
     font-family: "Noto Sans KR", sans-serif;
-    font-size: 9.5px;
-    font-weight: 700;
-    color: #b8553a;
-    background: rgba(217, 119, 87, .14);
-    padding: 2px 7px;
-    border-radius: 999px;
-    letter-spacing: -.1px;
-    line-height: 1.4;
-  }
-  .cat-target {
-    font-family: "Noto Sans KR", sans-serif;
-    font-size: 12px;
-    color: var(--ink-2);
-    font-weight: 500;
-    letter-spacing: -.1px;
-    line-height: 1.45;
-    word-break: keep-all;
-  }
-  .cat-target strong { color: var(--ink); font-weight: 700; }
-  .cat-current {
-    font-family: "Roboto", sans-serif;
-    font-size: 10.5px;
-    color: var(--ink-3);
-    font-weight: 500;
-    margin-top: 2px;
-    letter-spacing: -.1px;
+    font-size: 15px; font-weight: 800; color: var(--ink);
+    letter-spacing: -.3px;
   }
   .plan-checkpoint {
     margin-top: 16px;
@@ -1259,7 +1230,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
   /* 테마 캐러셀 도트 (우상단) */
   .theme-dots { position: absolute; top: 50px; right: 24px; z-index: 6; display: flex; align-items: center; gap: 5px; }
-  .theme-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgba(80,72,66,.32); cursor: pointer; transition: background .25s ease; }
+  .theme-dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px; background: rgba(80,72,66,.32); cursor: pointer; transition: background .25s ease; position: relative; }
+  /* 보이는 도트는 8px 그대로, 클릭/호버 영역만 투명하게 확대 → 포인터 커서 잘 잡힘 */
+  .theme-dot::after { content: ""; position: absolute; inset: -8px -4px; }
   .theme-dot:hover { background: rgba(80,72,66,.55); }
   .theme-dot.active { background: #7d7169; }
 
@@ -1879,11 +1852,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         <div class="plan-summary">기간 <strong>${p.days}일</strong> · 체지방 <strong>${p.fat}% → ${p.goalFat}%</strong> · 일일 적자 <strong>${p.dailyDeficit}kcal</strong></div>
       </div>
       <div class="plan-divider"></div>
-      <div class="cat-list">
-        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 태우기</span>${p.sedentary?bn:''}</div><div class="cat-target">매일 <strong>+${p.burnKcal}kcal</strong> · 목표 <strong>${p.stepTarget.toLocaleString()}보</strong></div><div class="cat-current">현재 ${flow.steps.toLocaleString()}보</div></div></div>
-        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 자기</span>${p.sleepBottleneck?bn:''}</div><div class="cat-target"><strong>${p.sleepHTarget}시간</strong> · 수면 점수 <strong>${p.sleepScoreTarget}↑</strong></div><div class="cat-current">현재 ${flow.sleepH}h · ${flow.sleepScore}점</div></div></div>
-        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 빠지기</span></div><div class="cat-target">주 <strong>-${p.weeklyLoss}kg</strong> · 체중계 연동 권장</div></div></div>
-        <div class="cat-row"><span class="cat-bullet"></span><div class="cat-body"><div class="cat-head"><span class="cat-name">잘 버티기</span>${p.stressBottleneck?bn:''}</div><div class="cat-target">스트레스 <strong>${p.stressMax}↓</strong></div><div class="cat-current">현재 ${flow.stress}</div></div></div>
+      <div class="plan-cats">
+        <div class="plan-cat"><div class="pc-name">잘 태우기</div><div class="pc-val">${p.stepTarget.toLocaleString()}보</div></div>
+        <div class="plan-cat"><div class="pc-name">잘 자기</div><div class="pc-val">${p.sleepHTarget}시간</div></div>
+        <div class="plan-cat"><div class="pc-name">잘 빠지기</div><div class="pc-val">주 -${p.weeklyLoss}kg</div></div>
+        <div class="plan-cat"><div class="pc-name">잘 버티기</div><div class="pc-val">스트레스 ${p.stressMax}↓</div></div>
       </div>
       <div class="plan-checkpoint">
         <div class="timeline">
@@ -2125,8 +2098,12 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const frame = document.querySelector('.museum-frame[data-theme="museum"]');
     const gallery = frame && frame.contentWindow && frame.contentWindow.gallery;
     if (gallery) {
-      if (n === 1) gallery.addSculpture(1, 'thrower');
-      else if (n === 2) gallery.addSculpture(0, 'nike');
+      // 미션 순서대로 지정된 보상 슬롯 채움 (fade-in)
+      if (n === 1) gallery.addSculpture(1, 'thrower');        // 앞열 가운데 전시대
+      else if (n === 2) gallery.addSculpture(0, 'nike');      // 앞열 왼쪽 전시대
+      else if (n === 3) gallery.addPainting('groom');         // 전면 초상화 (왼쪽 2번째)
+      else if (n === 4) gallery.addPainting('rest');          // 왼쪽 안쪽 풍경화
+      else if (n === 5) gallery.addPainting('manage');        // 오른쪽 안쪽 추상화
       else gallery.addPainting();
     }
     // 완료한 미션은 다음 미션으로 교체 → 실험실로 돌아오면 새 미션이 떠 있음
