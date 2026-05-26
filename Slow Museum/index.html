@@ -695,11 +695,10 @@ Object.keys(EXHIBIT).forEach(zk => {
 const gltfLoader = new THREE.GLTFLoader();
 if (window.MeshoptDecoder) gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 const _sbox = new THREE.Box3(), _ssz = new THREE.Vector3(), _sctr = new THREE.Vector3();
-function _loadSculptureToPed(ped, fadeIn) {
-  const name = ped.userData._sculpt;
-  if (!name) return;
-  const adj = SCULPT_ADJ[name] || { scale: 1, ry: 0 };
-  gltfLoader.load('asset/sculpture/' + name + '.glb', gltf => {
+const _preloaded = {};   // 런타임 보상 조각 프리로드 저장 (name → gltf)
+function _placeSculpture(ped, gltf, fadeIn) {
+    const name = ped.userData._sculpt;
+    const adj = SCULPT_ADJ[name] || { scale: 1, ry: 0 };
     const m = gltf.scene;
     m.rotation.y = adj.ry;                      // 회전 먼저 적용 (정렬 전)
     m.updateMatrixWorld(true);
@@ -728,7 +727,7 @@ function _loadSculptureToPed(ped, fadeIn) {
       }
     });
     ped.add(m);
-    if (fadeIn) registerFade(m);   // 새 조각 페이드 인
+    if (fadeIn) registerFade(m, 1.2);   // 새 조각 페이드 인 (그림보다 살짝 천천히)
     // ── 조각별 개별 스포트라이트 (광원 자체는 비표시 — SpotLight는 지오메트리 없음) ──
     const _wb = new THREE.Box3().setFromObject(m);
     const _wc = _wb.getCenter(new THREE.Vector3());
@@ -746,10 +745,20 @@ function _loadSculptureToPed(ped, fadeIn) {
     spot.target = stgt;
     ped.add(spot);
     ped.userData.spot = spot;                        // 추후 개별 조정용
-  }, undefined, err => console.error('GLB load failed:', name, err));
+}
+function _loadSculptureToPed(ped, fadeIn) {
+  const name = ped.userData._sculpt;
+  if (!name) return;
+  if (_preloaded[name]) { _placeSculpture(ped, _preloaded[name], fadeIn); return; }   // 프리로드됨 → 즉시 배치(지연 없음)
+  gltfLoader.load('asset/sculpture/' + name + '.glb', gltf => _placeSculpture(ped, gltf, fadeIn),
+    undefined, err => console.error('GLB load failed:', name, err));
 }
 // 초기 조각 로드 (PED_ASSIGN에 지정된 슬롯)
 zones.move.items.forEach(ped => { if (ped.userData._sculpt) _loadSculptureToPed(ped); });
+// 런타임 보상 조각(thrower·nike) 프리로드 → 미션 완료 시 로딩 지연 없이 즉시 페이드 인
+['thrower', 'nike'].forEach(name => {
+  gltfLoader.load('asset/sculpture/' + name + '.glb', g => { _preloaded[name] = g; }, undefined, () => {});
+});
 
 // 단독 감상 시 해당 작품을 확실히 밝히는 포커스 조명
 const focusLight = new THREE.PointLight(0xfff2dc, 0, 9, 1.5);
