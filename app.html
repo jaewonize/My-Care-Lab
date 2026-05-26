@@ -351,6 +351,25 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(20,40,50,.04);
   }
 
+  /* '지금 할 일' 헤더 — 클릭하면 미션 카드 펼침 */
+  .mission-sec { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .mission-sec > div { display: flex; align-items: center; }
+  .mission-badge {
+    margin-left: 7px; min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: 999px; background: var(--gradient-key); color: #fff;
+    font-family: var(--font); font-size: 10px; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center;
+    animation: mission-glow 1.5s ease-in-out infinite;
+  }
+  .mission-toggle {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-family: var(--font); font-size: 11.5px; font-weight: 700;
+    color: var(--primary); letter-spacing: -.1px;
+  }
+  .mission-toggle svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; }
+  .mission-sec.open .mission-toggle svg { transform: rotate(180deg); }
+  .mission-sec.open .mission-badge { display: none; }
+
   /* 실시간(live) 미션 카드 강조 — glow 펄스 */
   @keyframes mission-glow {
     0%, 100% { box-shadow: 0 2px 12px rgba(45,180,160,.20); }
@@ -974,6 +993,47 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .photo-slot .photo-icon img { width: 100%; height: 100%; object-fit: cover; }
   /* 건너뛰기 선택 상태 */
   .photo-slot.is-skipped { opacity: .55; }
+
+  /* Step 1 — 에이전트가 찾은 사진 + 데이터 연동 (능동형) */
+  .found-photo {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 14px;
+    background: rgba(255,255,255,.55);
+    border: 1px solid rgba(20,60,70,.08);
+  }
+  .fp-thumb {
+    width: 46px; height: 58px; flex: 0 0 46px;
+    border-radius: 10px; overflow: hidden;
+    background: linear-gradient(160deg, #eef5f3, #dde9e8);
+    display: grid; place-items: center;
+  }
+  .fp-thumb svg { width: 78%; height: 86%; display: block; }
+  .fp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fp-text { flex: 1 1 auto; min-width: 0; }
+  .fp-title { font-family: "Noto Sans KR", sans-serif; font-size: 13px; font-weight: 700; color: var(--ink); letter-spacing: -.2px; }
+  .fp-sub { font-size: 11px; color: var(--ink-3); margin-top: 3px; letter-spacing: -.1px; }
+  .fp-check {
+    width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%;
+    background: var(--gradient-key); color: #fff;
+    display: grid; place-items: center; font-size: 12px; font-weight: 700;
+  }
+  .connect-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .connect-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 12px;
+    background: rgba(255,255,255,.45);
+    border: 1px solid rgba(20,60,70,.07);
+  }
+  .connect-ico {
+    width: 34px; height: 34px; flex: 0 0 34px; border-radius: 9px;
+    background: rgba(108,200,224,.16);
+    display: grid; place-items: center; font-size: 17px;
+  }
+  .connect-meta { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .connect-meta b { font-family: "Noto Sans KR", sans-serif; font-size: 12.5px; font-weight: 700; color: var(--ink); letter-spacing: -.2px; }
+  .connect-meta span { font-size: 10.5px; color: var(--ink-3); margin-top: 1px; letter-spacing: -.1px; }
+  .connect-tag { font-size: 10px; font-weight: 700; color: var(--primary); background: rgba(26,166,194,.1); padding: 3px 8px; border-radius: 999px; flex: 0 0 auto; }
+
   .uc-section { margin-top: 18px; }
   .uc-section-label {
     font-family: "Noto Sans KR", sans-serif;
@@ -1170,6 +1230,14 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     background: linear-gradient(#fff, #fff) padding-box, var(--gradient-key) border-box;
   }
   .date-opt.selected .date-bullet::after { transform: scale(1); }
+  /* 직접 입력 날짜 필드 */
+  .date-custom {
+    font-family: var(--font); font-size: 12px; font-weight: 600;
+    color: var(--ink); background: #fff;
+    border: 1px solid rgba(20,60,70,.16); border-radius: 9px;
+    padding: 5px 8px; margin-right: 8px;
+    flex: 0 0 auto; max-width: 130px;
+  }
   /* ============================================================
      Dashboard — 3D 테마 갤러리 (iframe) + 글래스 점수 카드
      ============================================================ */
@@ -1339,8 +1407,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
             <div class="greet-title">Care Lab</div>
           </header>
 
-          <div class="sec" id="missionSec" hidden>
-            <div><span class="sec-title">지금 할 일</span></div>
+          <div class="sec mission-sec" id="missionSec" hidden role="button" tabindex="0">
+            <div><span class="sec-title">지금 할 일</span><span class="mission-badge" id="missionBadge">1</span></div>
+            <span class="mission-toggle" id="missionToggle">확인 <svg viewBox="0 0 12 12"><path d="M3 5l3 3 3-3"/></svg></span>
           </div>
           <div class="inline-nudge mission-nudge" data-nudge id="missionNudge" hidden></div>
 
@@ -1517,9 +1586,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     qrEl.remove();
     appendUser(label);
     setTimeout(() => {
-      if (kind === 'sleep') appendAgent('<p>이번 데모에서는 <strong>체중감량 솔루션</strong>만 시연돼요.</p><p>체중감량으로 진행할게요.</p>');
+      if (kind === 'sleep') appendAgent('<p>이번 데모에서는 <strong>체중감량 솔루션</strong>만 시연돼요.</p>');
       setTimeout(() => {
-        appendAgent('<p>먼저 <strong>현재 상태</strong>를 알려주세요.</p><p>전신사진과 체성분 데이터가 필요해요.</p>');
+        appendAgent('<p>현재 상태부터 파악할게요. 갤러리와 건강 데이터를 살펴봤어요.</p>');
         appendStep1();
       }, kind === 'sleep' ? 450 : 100);
     }, 350);
@@ -1528,112 +1597,45 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const card = document.createElement('div');
     card.className = 'ui-card';
     card.innerHTML = `
-      <div class="uc-head"><span class="uc-step">Step 1 / 4</span><span class="uc-title">현재 상태</span></div>
-      <div class="photo-slot" data-photo-slot role="button" tabindex="0">
-        <span class="photo-icon" data-photo-icon><svg viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg></span>
-        <span class="photo-label" data-photo-label>전신사진 업로드</span>
-        <span class="photo-skip" data-photo-skip>건너뛰기</span>
-        <input type="file" accept="image/*" hidden data-photo-input/>
+      <div class="uc-head"><span class="uc-step">Step 1 / 4</span><span class="uc-title">현재 상태 파악</span></div>
+      <div class="found-photo">
+        <div class="fp-thumb"><img src="body_profile.jpg" alt="찾은 전신사진"/></div>
+        <div class="fp-text">
+          <div class="fp-title">갤러리에서 전신사진을 찾았어요</div>
+          <div class="fp-sub">2주 전 촬영 · 체형 분석에 적합</div>
+        </div>
+        <span class="fp-check">✓</span>
       </div>
-      <div class="photo-hint">건너뛰면 더미 실루엣으로 진행돼요</div>
-      <div class="uc-section">
-        <div class="uc-section-label">신체 데이터</div>
-        <div class="fields-grid g3">
-          <div class="field"><div class="field-label">체중</div><div class="field-value"><input value="65" data-in="weight"/><span class="field-unit">kg</span></div></div>
-          <div class="field"><div class="field-label">체지방률</div><div class="field-value"><input value="32" data-in="fat"/><span class="field-unit">%</span></div></div>
-          <div class="field"><div class="field-label">근육량</div><div class="field-value"><input value="22" data-in="muscle" readonly title="체중·체지방률에서 자동 산출"/><span class="field-unit">kg</span></div></div>
-          <div class="field"><div class="field-label">키</div><div class="field-value"><input value="168" data-in="height"/><span class="field-unit">cm</span></div></div>
-          <div class="field"><div class="field-label">나이</div><div class="field-value"><input value="34" data-in="age"/><span class="field-unit">세</span></div></div>
-          <div class="field"><div class="field-label">성별</div><div class="seg" data-seg><button class="seg-opt active" data-val="F">F</button><button class="seg-opt" data-val="M">M</button></div></div>
+      <div class="uc-section-label" style="margin-top:16px">연동할 데이터</div>
+      <div class="connect-list">
+        <div class="connect-row">
+          <span class="connect-ico">⌚</span>
+          <div class="connect-meta"><b>Galaxy Watch</b><span>걸음수 4,200보 · 수면 5.5h · 스트레스 72</span></div>
+          <span class="connect-tag">연동</span>
+        </div>
+        <div class="connect-row">
+          <span class="connect-ico">📊</span>
+          <div class="connect-meta"><b>삼성 헬스</b><span>체중 65kg · 체지방률 32% · 168cm</span></div>
+          <span class="connect-tag">연동</span>
         </div>
       </div>
-      <div class="uc-section">
-        <div class="uc-section-label">최근 라이프스타일 평균</div>
-        <div class="fields-grid g2">
-          <div class="field"><div class="field-label">평균 걸음수</div><div class="field-value"><input value="4,200" data-in="steps"/><span class="field-unit">보</span></div></div>
-          <div class="field"><div class="field-label">평균 수면</div><div class="field-value"><input value="5.5" data-in="sleepH"/><span class="field-unit">h</span></div></div>
-          <div class="field"><div class="field-label">수면 점수</div><div class="field-value"><input value="58" data-in="sleepScore"/><span class="field-unit">/100</span></div></div>
-          <div class="field"><div class="field-label">스트레스 지수</div><div class="field-value"><input value="72" data-in="stress"/><span class="field-unit">/100</span></div></div>
-        </div>
-      </div>
-      <button class="uc-confirm" data-confirm="1">확인 완료</button>
+      <button class="uc-confirm" data-confirm="1">연동 승인하고 계속</button>
     `;
     appendNode(card);
-
-    // ── 사진 업로드 ──
-    const slot = card.querySelector('[data-photo-slot]');
-    const fileInput = card.querySelector('[data-photo-input]');
-    const photoIcon = card.querySelector('[data-photo-icon]');
-    const photoLabel = card.querySelector('[data-photo-label]');
-    const skipBtn = card.querySelector('[data-photo-skip]');
-    const openPicker = () => fileInput.click();
-    slot.addEventListener('click', (e) => {
-      if (e.target.closest('[data-photo-skip]')) return;   // 건너뛰기는 별도 처리
-      openPicker();
-    });
-    slot.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } });
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        flow.photoSrc = reader.result;
-        flow.photoSkipped = false;
-        slot.classList.remove('is-skipped');
-        slot.classList.add('is-done');
-        photoIcon.innerHTML = `<img src="${reader.result}" alt="업로드한 사진"/>`;
-        photoLabel.textContent = file.name.length > 18 ? file.name.slice(0, 16) + '…' : file.name;
-        skipBtn.textContent = '변경';
-      };
-      reader.readAsDataURL(file);
-    });
-    skipBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (slot.classList.contains('is-done')) { openPicker(); return; }   // '변경' 동작
-      flow.photoSrc = null;
-      flow.photoSkipped = true;
-      slot.classList.add('is-skipped');
-      photoLabel.textContent = '더미 실루엣으로 진행';
-      skipBtn.textContent = '건너뜀 ✓';
-    });
-
-    const getGender = () => card.querySelector('.seg-opt.active')?.dataset.val || 'F';
-    const inEl = (k) => card.querySelector(`[data-in="${k}"]`);
-    // 체중·체지방률·성별 변하면 근육량 자동 재산출 (정합 유지)
-    function recalcMuscle() {
-      const w = numFrom(inEl('weight').value);
-      const f = numFrom(inEl('fat').value);
-      if (w > 0 && f > 0) inEl('muscle').value = bodyComp(w, f, getGender()).muscle.toFixed(1);
-    }
-    inEl('weight').addEventListener('input', recalcMuscle);
-    inEl('fat').addEventListener('input', recalcMuscle);
-    card.querySelector('[data-seg]').querySelectorAll('.seg-opt').forEach(b => {
-      b.addEventListener('click', () => {
-        card.querySelectorAll('.seg-opt').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        recalcMuscle();
-      });
-    });
-    recalcMuscle();
     card.querySelector('[data-confirm="1"]').addEventListener('click', () => onStep1Confirm(card));
   }
   function onStep1Confirm(card) {
     card.querySelector('[data-confirm="1"]').disabled = true;
-    const inEl = (k) => card.querySelector(`[data-in="${k}"]`);
-    flow.gender = card.querySelector('.seg-opt.active')?.dataset.val || 'F';
-    flow.weight = numFrom(inEl('weight').value);
-    flow.fatPct = numFrom(inEl('fat').value);
-    flow.height = numFrom(inEl('height').value);
-    flow.age    = numFrom(inEl('age').value);
-    flow.steps  = numFrom(inEl('steps').value);
-    flow.sleepH = numFrom(inEl('sleepH').value);
-    flow.sleepScore = numFrom(inEl('sleepScore').value);
-    flow.stress = numFrom(inEl('stress').value);
+    // 에이전트가 연동한 데이터 (시연용 고정값)
+    flow.gender = 'F';
+    flow.weight = 65; flow.fatPct = 32; flow.height = 168; flow.age = 34;
+    flow.steps = 4200; flow.sleepH = 5.5; flow.sleepScore = 58; flow.stress = 72;
+    flow.photoSrc = 'body_profile.jpg';   // 에이전트가 찾은 사진 → Step 2 warp에 사용
     const c = bodyComp(flow.weight, flow.fatPct, flow.gender);
     flow.muscle = c.muscle; flow.lean = c.lean; flow.fatMass = c.fatMass;
-    appendUser('확인 완료');
+    appendUser('연동 승인');
     setTimeout(() => {
-      appendAgent('<p>좋아요. 이제 <strong>목표 체형</strong>을 설정해볼까요?</p><p>슬라이더를 움직이면 신체 파라미터가 실시간으로 바뀌어요.</p>');
+      appendAgent('<p>데이터를 연결했어요. 이제 <strong>목표 체형</strong>을 함께 정해요.</p>');
       appendStep2();
     }, 350);
   }
@@ -1709,7 +1711,10 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     function drawWarp(cv, img, amt) {
       const ctx = cv.getContext('2d');
       const W = cv.width, H = cv.height;
+      // 압축으로 생기는 좌우 여백 = 라이트 그레이 (배경 그라데이션 대신)
       ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#e9ecee';
+      ctx.fillRect(0, 0, W, H);
       const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
       if (!iw || !ih) return;
       const scale = Math.max(W / iw, H / ih);     // cover fit
@@ -1717,10 +1722,10 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       const dy = (H - dh) / 2;
       for (let y = 0; y < H; y++) {
         const r = y / H;
-        let comp = 1.0;
-        if (r >= 0.45 && r <= 0.72) { const d = Math.abs(r - 0.585) / 0.135; comp = 1 - amt * 0.30 * Math.max(0, 1 - d); }
-        else if (r >= 0.20 && r <= 0.40) { comp = 1 - amt * 0.07; }
-        else if (r >= 0.72 && r <= 0.92) { comp = 1 - amt * 0.13; }
+        // 부드러운 단일 가우시안 압축 — 허리(0.53) 중심, 넓고 완만하게 전신에 분포.
+        // 날카로운 허리·다리 밴드 대신 완만한 곡선 → 컨트라스트 약화, 자연스러운 슬림.
+        const env = Math.exp(-Math.pow((r - 0.53) / 0.24, 2));
+        const comp = 1 - amt * 0.18 * env;
         const srcY = (y - dy) / scale;
         if (srcY < 0 || srcY >= ih) continue;
         const destW = dw * comp;
@@ -1736,11 +1741,15 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const FLOOR = (flow.gender === 'M') ? 13 : 21;     // 건강 체지방률 하한
     const tgtFat = Math.max(FLOOR, Fc - 14);           // 슬라이더 최대 시 목표 체지방률
     const lerp = (a,b,t) => a + (b-a)*t;
-    // 제지방량(=근육 포함)은 유지하고 체지방만 감소 → 세 수치가 항상 정합
+    // 운동 처방으로 근육량 소폭 증가(최대 +1.2kg) → 제지방량도 그만큼 증가.
+    // 체지방률은 목표까지 감소. 세 수치가 항상 정합.
+    const MUSCLE_GAIN = 1.2;
     function goalAt(t) {
       const gf = lerp(Fc, tgtFat, t);                  // 목표 체지방률
-      const fatMass = leanC * gf / (100 - gf);         // 체지방량 역산
-      return { w: leanC + fatMass, f: gf, m: muscleC };// 체중=제지방+체지방, 근육량 유지
+      const mGain = MUSCLE_GAIN * t;                   // 근육량 소폭 증가
+      const lean = leanC + mGain;                      // 제지방량 = 기존 + 근육 증가분
+      const fatMass = lean * gf / (100 - gf);          // 체지방량 역산
+      return { w: lean + fatMass, f: gf, m: muscleC + mGain };
     }
     function morph(t) {
       return `M${lerp(22,23,t)} 23 Q${lerp(12,14,t)} 26 ${lerp(11,13,t)} 38 L${lerp(14,16,t)} 60 Q${lerp(14,16,t)} 72 ${lerp(18,20,t)} 80 L${lerp(13,15,t)} 110 L${lerp(17,19,t)} 130 L27 130 L29 100 L31 100 L33 130 L${lerp(43,41,t)} 130 L${lerp(47,45,t)} 110 L${lerp(42,40,t)} 80 Q${lerp(46,44,t)} 72 ${lerp(46,44,t)} 60 L${lerp(49,47,t)} 38 Q${lerp(48,46,t)} 26 ${lerp(38,37,t)} 23 Z`;
@@ -1754,11 +1763,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       const t = slider.value/100;
       slider.style.setProperty('--fill', slider.value+'%');
       const g = goalAt(t);
-      const wv = Math.round(g.w), fv = Math.round(g.f), mv = Math.round(g.m);
+      const wv = Math.round(g.w), fv = Math.round(g.f), mv = g.m.toFixed(1);
       const isW = wv < 50 || g.f <= FLOOR + 0.5;
       setN(w, wv, 'kg', Math.abs(g.w - Wc) >= 0.5, isW);
       setN(f, fv, '%',  Math.abs(g.f - Fc) >= 0.5, false);
-      setN(m, mv, 'kg', false, false);                 // 근육량 유지(변화 표시 없음)
+      setN(m, mv, 'kg', Math.abs(g.m - muscleC) >= 0.1, false);  // 근육량 소폭 증가 표시
       slider.classList.toggle('warn', isW);
       warn.hidden = !isW;
       if (warpTarget) warpTarget(t);                   // 사진 모드: canvas warp
@@ -1787,52 +1796,54 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const card = document.createElement('div');
     card.className = 'ui-card';
     const mem = MEMORY_EVENTS.map(e => ({ key:e.key, title:e.title, date:e.date, days:dday(e.date) }));
-    // 프리셋: 메모리 이벤트와 ~14일 이내로 거의 겹치면 제외 → 살아남은 것 중 최대 3개
-    // (예: '3개월 후'가 My Wedding과 비슷하면 빼고 '2개월 후' 같은 대안이 자동으로 채워짐)
-    const cand = [
-      { key:'2m', m:2, title:'2개월 후' }, { key:'3m', m:3, title:'3개월 후' },
-      { key:'4m', m:4, title:'4개월 후' }, { key:'6m', m:6, title:'6개월 후' },
-      { key:'1y', m:12, title:'1년 후' },
-    ];
-    const presets = [];
-    for (const c of cand) {
-      const date = addMonths(TODAY, c.m), days = dday(date);
-      if (mem.some(e => Math.abs(e.days - days) <= 14)) continue;   // 메모리와 거의 동일 → 스킵
-      presets.push({ key:c.key, title:c.title, date, days });
-      if (presets.length >= 3) break;
-    }
     const optHTML = (o, sel) => `<label class="date-opt${sel?' selected':''}" data-key="${o.key}" data-days="${o.days}"><input type="radio" name="t"${sel?' checked':''}/><div class="date-body"><div class="date-title">${o.title}</div><div class="date-sub">${fmtDate(o.date)}</div></div><div class="date-day">D-${o.days}</div><div class="date-bullet"></div></label>`;
+    // 직접 입력: 선택 시 날짜 입력 노출
+    const minDate = fmtDate(addMonths(TODAY, 0)).replace(/\./g,'-').replace(/-$/,'');
+    const customHTML = `<label class="date-opt date-opt-custom" data-key="custom"><input type="radio" name="t"/><div class="date-body"><div class="date-title">직접 입력</div><div class="date-sub">원하는 목표 날짜 선택</div></div><input type="date" class="date-custom" data-custom-input/><div class="date-bullet"></div></label>`;
     card.innerHTML = `
       <div class="uc-head"><span class="uc-step">Step 3 / 4</span><span class="uc-title">타겟 날짜</span></div>
       <div class="uc-section" style="margin-top:8px">
-        <div class="uc-section-label">메모리에서</div>
-        <div class="date-list">${mem.map((o,i)=>optHTML(o, i===0)).join('')}</div>
-      </div>
-      <div class="uc-section">
-        <div class="uc-section-label">프리셋</div>
-        <div class="date-list">${presets.map(o=>optHTML(o, false)).join('')}</div>
+        <div class="uc-section-label">메모리에서 찾았어요</div>
+        <div class="date-list">${mem.map((o,i)=>optHTML(o, i===0)).join('')}${customHTML}</div>
       </div>
       <button class="uc-confirm" data-confirm="3">다음</button>
     `;
     appendNode(card);
+    const customInput = card.querySelector('[data-custom-input]');
+    const selectOpt = (opt) => {
+      card.querySelectorAll('.date-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      opt.querySelector('input[type="radio"]').checked = true;
+    };
     card.querySelectorAll('.date-opt').forEach(opt => {
       opt.addEventListener('click', (e) => {
+        if (e.target.closest('[data-custom-input]')) return;   // 날짜 입력 클릭은 선택 토글 안 함
         e.preventDefault();
-        card.querySelectorAll('.date-opt').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        opt.querySelector('input').checked = true;
+        selectOpt(opt);
+        if (opt.dataset.key === 'custom') customInput.showPicker?.();
       });
     });
+    customInput.addEventListener('change', () => selectOpt(card.querySelector('.date-opt-custom')));
     card.querySelector('[data-confirm="3"]').addEventListener('click', () => onStep3Confirm(card));
   }
   function onStep3Confirm(card) {
-    card.querySelector('[data-confirm="3"]').disabled = true;
     const sel = card.querySelector('.date-opt.selected');
-    const title = sel.querySelector('.date-title').textContent;
-    const day = sel.querySelector('.date-day').textContent;
-    flow.targetDays = parseInt(sel.dataset.days, 10) || numFrom(day);
+    if (!sel) return;
+    let title, days;
+    if (sel.dataset.key === 'custom') {
+      const v = card.querySelector('[data-custom-input]').value;
+      if (!v) { card.querySelector('[data-custom-input]').showPicker?.(); return; }   // 날짜 미선택 시 진행 막음
+      const d = new Date(v + 'T00:00:00');
+      days = dday(d);
+      title = fmtDate(d);
+    } else {
+      title = sel.querySelector('.date-title').textContent;
+      days = parseInt(sel.dataset.days, 10) || numFrom(sel.querySelector('.date-day').textContent);
+    }
+    card.querySelector('[data-confirm="3"]').disabled = true;
+    flow.targetDays = days;
     flow.targetTitle = title;
-    appendUser(`▸ ${title} (${day})`);
+    appendUser(`▸ ${title} (D-${days})`);
     setTimeout(() => {
       appendAgent('<p>데이터를 분석해서 플랜을 만들었어요.</p><p>견적을 확인해보세요.</p>');
       appendStep4();
@@ -1918,15 +1929,15 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     `;
     list.insertBefore(item, list.firstChild);
     document.getElementById('solCount').textContent = '3';
-    // 솔루션 생성 후에만 '지금 할 일' 미션 카드 노출 (위협 징후 감지 전제)
+    // 솔루션 생성 직후엔 '지금 할 일' 헤더만 노출 (목록 업데이트 우선).
+    // 헤더를 누르면 미션 카드가 펼쳐짐.
     document.getElementById('missionSec').hidden = false;
-    document.getElementById('missionNudge').hidden = false;
   }
 
   /* === Inline nudge cycling === */
   const NUDGES = [
     { cat: '잘 태우기', time: '오후 6:40',
-      lead: '버스 타고 퇴근 중이시네요.',
+      lead: '버스로 퇴근 중이시네요.',
       action: '세곡사거리에 내려서 1.2km 걸어가세요',
       reason: '오늘 걸음수 목표의 절반 · 1.2km면 약 1,700보를 더 채워요' },
     { cat: '잘 빠지기', time: '오전 7:02',
@@ -1981,6 +1992,19 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     });
   }
   if (nudgeMount) renderNudge();
+
+  /* '지금 할 일' 헤더 클릭 → 미션 카드 펼침/접기 */
+  (function () {
+    const sec = document.getElementById('missionSec');
+    const card = document.getElementById('missionNudge');
+    if (!sec || !card) return;
+    sec.addEventListener('click', () => {
+      const open = card.hidden;
+      card.hidden = !open;
+      sec.classList.toggle('open', open);
+      if (open) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  })();
 
   /* === Chat scroll to bottom on entering === */
   document.getElementById('enterChat').addEventListener('click', () => {
