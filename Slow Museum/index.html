@@ -662,7 +662,7 @@ function _loadPaintingToFrame(f, zk, entry, fadeIn) {
     const aspect = iw / ih;
     if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
     else fitFrameByArea(f, tex, aspect, z.area);
-    if (fadeIn && f.userData.art) registerFade(f.userData.art, 0.8, 0.5);   // 0.5s 지연 후 0.8s 페이드 인
+    if (fadeIn && f.userData.art) registerFade(f.userData.art, 0.8);   // 0.8s 페이드 인. 등장 타이밍은 부모가 제어
   }, undefined, err => console.error(zk + ' load failed:', name, err));
 }
 
@@ -727,7 +727,7 @@ function _placeSculpture(ped, gltf, fadeIn) {
       }
     });
     ped.add(m);
-    if (fadeIn) registerFade(m, 1.2, 0.5);   // 0.5s 지연 후 1.2s 페이드 인 (그림보다 천천히)
+    if (fadeIn) registerFade(m, 1.2);   // 1.2s 페이드 인 (그림보다 천천히). 등장 타이밍은 부모가 제어
     // ── 조각별 개별 스포트라이트 (광원 자체는 비표시 — SpotLight는 지오메트리 없음) ──
     const _wb = new THREE.Box3().setFromObject(m);
     const _wc = _wb.getCenter(new THREE.Vector3());
