@@ -54,6 +54,19 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   html.embed body { display: flex; align-items: center; justify-content: center; }
   html.embed .stage-label { display: none; }
   html.embed .phone { box-shadow: none; }
+  /* 시연자용 갤러리 리셋 — 1×2 점수 카드 위, 우측 정렬. 기호만(눈에 안 띄게) */
+  .gallery-reset {
+    position: absolute; right: 16px; bottom: 296px; z-index: 6;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,.32);
+    border: 1px solid rgba(80,72,66,.16);
+    color: rgba(80,72,66,.7); font-size: 13px; line-height: 1;
+    cursor: pointer; opacity: .6;
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    transition: opacity .15s, background .15s;
+  }
+  .gallery-reset:hover { opacity: 1; background: rgba(255,255,255,.7); }
 
   /* ============================================================
      Phone shell
@@ -1326,6 +1339,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
             <div class="loading-text">로딩 중…</div>
           </div>
           <div class="theme-dots" id="theme-dots" role="tablist" aria-label="테마 전환"></div>
+          <button id="galleryReset" class="gallery-reset" title="갤러리 리셋(보상 채우기 이전으로)" aria-label="갤러리 리셋">↺</button>
           <div class="score-cards" id="score-cards">
             <div class="scard scard-new" id="dash-new-card">
               <span class="s-tag s-tag-new">NEW</span>
@@ -1978,6 +1992,15 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   let activeTheme = 'museum';
   let missionsDone = 0;
   let execScore = 0;   // 솔루션 수행(이행)점수 — '했어요'마다 +2
+
+  /* 시연자용 갤러리 리셋: museum iframe을 리로드해 보상 채우기 이전 초기 상태로 + 미션 카운터 0 */
+  document.getElementById('galleryReset').addEventListener('click', () => {
+    const f = document.querySelector('.museum-frame[data-theme="museum"]');
+    if (f) { try { f.contentWindow.location.reload(); } catch (e) { f.src = f.src; } }
+    missionsDone = 0;
+    if (activeTheme !== 'museum') { activeTheme = 'museum'; applyActiveTheme(); updateThemeDots(); }
+    showScreen('screen-dashboard');
+  });
 
   // 수행점수 +2 → 대시보드 1×1 카드 점수 + 홈 새 솔루션 카드 % 동기화
   function bumpExecScore() {
