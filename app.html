@@ -2128,15 +2128,14 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         else gallery.addPainting();
       }, 600);   // 화면 전환(~0.3s) 후 도착 시점에 등장
     }
-    // 완료한 미션은 다음 미션으로 교체 → 실험실로 돌아오면 새 미션이 떠 있음
+    // 완료한 미션은 다음 미션으로 교체하고, 카드는 펼쳐진 채로 둔다
+    // → 실험실로 복귀하면 새 미션이 바로 펼쳐져 보임.
     nudgeIdx = (nudgeIdx + 1) % NUDGES.length;
     renderNudge();
-    // 카드를 접어 둔다. 실험실 복귀 후 '지금 할 일'을 다시 누르면 새 미션이 펼쳐져
-    // 미션이 교체됐음이 분명히 보인다 (카드가 같은 자리에 열린 채 남아 변화가 안 느껴지던 문제 해결).
     const mCard = document.getElementById('missionNudge');
     const mSec = document.getElementById('missionSec');
-    if (mCard) mCard.hidden = true;
-    if (mSec) mSec.classList.remove('open');
+    if (mCard) mCard.hidden = false;
+    if (mSec) mSec.classList.add('open');
   }
 
   /* 탭바: 대시보드 ↔ 실험실 */
