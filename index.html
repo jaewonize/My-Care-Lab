@@ -1328,7 +1328,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       <!-- ═══ RIGHT · PoC 모바일 (직접 임베드, iframe 중첩 없음) ═══ -->
       <div class="col-right">
         <div class="device">
-    <iframe id="appFrame" class="app-frame" src="app.html?embed=1&v=20260526" title="My Care Lab 데모"></iframe>
+    <iframe id="appFrame" class="app-frame" title="My Care Lab 데모"></iframe>
+    <script>
+      /* iframe app.html을 매 로드마다 고유 URL로 → 캐시로 옛 화면이 박히는 문제 방지 */
+      document.getElementById('appFrame').src = 'app.html?embed=1&v=' + Date.now();
+    </script>
         </div><!-- /.device -->
       </div><!-- /.col-right -->
     </div><!-- /.shell -->
