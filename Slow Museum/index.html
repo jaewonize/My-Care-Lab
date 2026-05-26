@@ -662,7 +662,7 @@ function _loadPaintingToFrame(f, zk, entry, fadeIn) {
     const aspect = iw / ih;
     if (zk === 'manage' && MANAGE_HEIGHT_KEEP[name]) fitFrameByHeight(f, tex, aspect, MANAGE_ART_H);
     else fitFrameByArea(f, tex, aspect, z.area);
-    if (fadeIn && f.userData.art) registerFade(f.userData.art);   // 새 그림 페이드 인
+    if (fadeIn && f.userData.art) registerFade(f.userData.art, 0.8, 0.5);   // 0.5s 지연 후 0.8s 페이드 인
   }, undefined, err => console.error(zk + ' load failed:', name, err));
 }
 
@@ -727,7 +727,7 @@ function _placeSculpture(ped, gltf, fadeIn) {
       }
     });
     ped.add(m);
-    if (fadeIn) registerFade(m, 1.2);   // 새 조각 페이드 인 (그림보다 살짝 천천히)
+    if (fadeIn) registerFade(m, 1.2, 0.5);   // 0.5s 지연 후 1.2s 페이드 인 (그림보다 천천히)
     // ── 조각별 개별 스포트라이트 (광원 자체는 비표시 — SpotLight는 지오메트리 없음) ──
     const _wb = new THREE.Box3().setFromObject(m);
     const _wc = _wb.getCenter(new THREE.Vector3());
@@ -1175,7 +1175,7 @@ window.__pauseRender = () => { _paused = true; };
 window.__resumeRender = () => { if (_paused) { _paused = false; _last = performance.now(); animate(); } };
 // ── 보상 등장 fade-in (런타임 추가 시에만) ──
 const _fading = [];
-function registerFade(root, dur = 0.8) {
+function registerFade(root, dur = 0.8, delay = 0) {
   const mats = [];
   root.traverse(o => {
     if (o.isMesh) {
@@ -1183,13 +1183,14 @@ function registerFade(root, dur = 0.8) {
       ms.forEach(m => { if (m && m.opacity !== undefined) { m.transparent = true; m.opacity = 0; mats.push(m); } });
     }
   });
-  if (mats.length) _fading.push({ mats, t: 0, dur });
+  if (mats.length) _fading.push({ mats, t: 0, dur, delay });
 }
 function updateFades(dt) {
   for (let i = _fading.length - 1; i >= 0; i--) {
     const f = _fading[i];
     f.t += dt;
-    const k = Math.min(1, f.t / f.dur);
+    if (f.t < f.delay) { f.mats.forEach(m => { m.opacity = 0; }); continue; }  // 지연 동안 투명 유지
+    const k = Math.min(1, (f.t - f.delay) / f.dur);
     const e = 1 - Math.pow(1 - k, 3);   // easeOutCubic
     f.mats.forEach(m => { m.opacity = e; });
     if (k >= 1) _fading.splice(i, 1);
