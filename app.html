@@ -1641,7 +1641,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         <div class="slider-ends"><span>현재 체형</span><span>목표 체형 →</span></div>
         <input type="range" class="slider" data-slider min="0" max="100" value="25" style="--fill:25%"/>
       </div>
-      <div class="warn-msg" data-warn hidden>⚠ 50kg 미만은 건강에 위협이 될 수 있어요</div>
+      <div class="warn-msg" data-warn hidden>⚠ 50kg 미만은 근손실이 불가피해요</div>
       <button class="uc-confirm" data-confirm="2">이 목표로 확정</button>
     `;
     appendNode(card);
@@ -1712,18 +1712,24 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const baseC = bodyComp(Wc, Fc, flow.gender || 'F');
     const leanC = flow.lean || baseC.lean;
     const muscleC = flow.muscle || baseC.muscle;
-    const FLOOR = (flow.gender === 'M') ? 13 : 21;     // 건강 체지방률 하한
-    const tgtFat = Math.max(FLOOR, Fc - 14);           // 슬라이더 최대 시 목표 체지방률
+    const W_MIN = 48;                                  // 슬라이더 최대 시 목표 체중(48kg까지)
+    const F_MIN = 12;                                  // 슬라이더 최대 시 체지방률(12%)
+    const W_WARN = 50;                                 // 50kg 미만이면 경고
+    const W_PEAK = 53;                                 // 이 체중 위: 근육 유지/증가. 아래: 근손실 불가피
+    const M_PEAK_GAIN = 1.5;                           // 정점(53kg)에서 근육 증가량
+    const M_MIN_DELTA = -2.0;                          // 최저 체중(48kg)에서 근육 변화(손실)
     const lerp = (a,b,t) => a + (b-a)*t;
-    // 운동 처방으로 근육량 소폭 증가(최대 +1.2kg) → 제지방량도 그만큼 증가.
-    // 체지방률은 목표까지 감소. 세 수치가 항상 정합.
-    const MUSCLE_GAIN = 1.2;
+    const clamp01 = (x) => Math.max(0, Math.min(1, x));
+    // 근육량: 53kg까지는 운동으로 증가(정점), 그 아래로는 근손실로 하락.
+    function muscleAt(w) {
+      if (w >= W_PEAK) return muscleC + M_PEAK_GAIN * clamp01((Wc - w) / (Wc - W_PEAK));
+      const peak = muscleC + M_PEAK_GAIN;
+      return peak + (M_MIN_DELTA - M_PEAK_GAIN) * clamp01((W_PEAK - w) / (W_PEAK - W_MIN));
+    }
+    // 슬라이더 = 목표 진행도. 체중·체지방률은 현재→목표로 감소, 근육량은 위 곡선(증가→하락).
     function goalAt(t) {
-      const gf = lerp(Fc, tgtFat, t);                  // 목표 체지방률
-      const mGain = MUSCLE_GAIN * t;                   // 근육량 소폭 증가
-      const lean = leanC + mGain;                      // 제지방량 = 기존 + 근육 증가분
-      const fatMass = lean * gf / (100 - gf);          // 체지방량 역산
-      return { w: lean + fatMass, f: gf, m: muscleC + mGain };
+      const w = lerp(Wc, W_MIN, t);
+      return { w, f: lerp(Fc, F_MIN, t), m: muscleAt(w) };
     }
     function morph(t) {
       return `M${lerp(22,23,t)} 23 Q${lerp(12,14,t)} 26 ${lerp(11,13,t)} 38 L${lerp(14,16,t)} 60 Q${lerp(14,16,t)} 72 ${lerp(18,20,t)} 80 L${lerp(13,15,t)} 110 L${lerp(17,19,t)} 130 L27 130 L29 100 L31 100 L33 130 L${lerp(43,41,t)} 130 L${lerp(47,45,t)} 110 L${lerp(42,40,t)} 80 Q${lerp(46,44,t)} 72 ${lerp(46,44,t)} 60 L${lerp(49,47,t)} 38 Q${lerp(48,46,t)} 26 ${lerp(38,37,t)} 23 Z`;
@@ -1738,10 +1744,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       slider.style.setProperty('--fill', slider.value+'%');
       const g = goalAt(t);
       const wv = Math.round(g.w), fv = Math.round(g.f), mv = g.m.toFixed(1);
-      const isW = wv < 50 || g.f <= FLOOR + 0.5;
+      const isW = g.w < W_WARN;                  // 체중 50kg 미만 경고
+      const mLoss = g.m < muscleC - 0.05;        // 근육량이 기준 이하 = 근손실 구간
       setN(w, wv, 'kg', Math.abs(g.w - Wc) >= 0.5, isW);
       setN(f, fv, '%',  Math.abs(g.f - Fc) >= 0.5, false);
-      setN(m, mv, 'kg', Math.abs(g.m - muscleC) >= 0.1, false);  // 근육량 소폭 증가 표시
+      setN(m, mv, 'kg', Math.abs(g.m - muscleC) >= 0.1 && !mLoss, mLoss);  // 증가=하이라이트 / 손실=경고색
       slider.classList.toggle('warn', isW);
       warn.hidden = !isW;
       if (warpTarget) warpTarget(t);                   // 사진 모드: canvas warp
