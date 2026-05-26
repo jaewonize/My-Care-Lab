@@ -364,25 +364,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     display: inline-flex; align-items: center; justify-content: center;
     animation: mission-glow 1.5s ease-in-out infinite;
   }
-  .mission-toggle {
-    display: inline-flex; align-items: center; gap: 3px;
-    font-family: var(--font); font-size: 11.5px; font-weight: 700;
-    color: var(--primary); letter-spacing: -.1px;
-  }
-  .mission-toggle svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s ease; }
-  .mission-sec.open .mission-toggle svg { transform: rotate(180deg); }
   .mission-sec.open .mission-badge { display: none; }
   /* hidden 속성이 display:inline-flex를 이기도록 명시 */
-  .mission-badge[hidden], .mission-toggle[hidden] { display: none; }
-  /* 솔루션 생성 전 빈 상태 */
-  .mission-empty {
-    font-family: "Noto Sans KR", sans-serif;
-    font-size: 12.5px; color: var(--ink-3);
-    text-align: center; padding: 20px 14px;
-    border: 1px dashed rgba(20,60,70,.14); border-radius: 14px;
-    letter-spacing: -.2px;
-  }
-  .mission-empty[hidden] { display: none; }
+  .mission-badge[hidden] { display: none; }
 
   /* 실시간(live) 미션 카드 강조 — glow 펄스 */
   @keyframes mission-glow {
@@ -1423,9 +1407,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
           <div class="sec mission-sec" id="missionSec" role="button" tabindex="0">
             <div><span class="sec-title">지금 할 일</span><span class="mission-badge" id="missionBadge" hidden>1</span></div>
-            <span class="mission-toggle" id="missionToggle" hidden>확인 <svg viewBox="0 0 12 12"><path d="M3 5l3 3 3-3"/></svg></span>
           </div>
-          <div class="mission-empty" id="missionEmpty">솔루션을 만들면 오늘의 미션이 도착해요</div>
           <div class="inline-nudge mission-nudge" data-nudge id="missionNudge" hidden></div>
 
           <div class="sec">
@@ -1944,11 +1926,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     `;
     list.insertBefore(item, list.firstChild);
     document.getElementById('solCount').textContent = '3';
-    // 솔루션 생성 → '지금 할 일'에 미션 1건 도착 표시 (빈 상태 → 1건).
+    // 솔루션 생성 → '지금 할 일'에 미션 1건 도착 = 숫자 뱃지 노출.
     // 헤더를 누르면 미션 카드가 펼쳐짐. (생성 직후엔 카드 접힌 상태)
-    document.getElementById('missionEmpty').hidden = true;
     document.getElementById('missionBadge').hidden = false;
-    document.getElementById('missionToggle').hidden = false;
   }
 
   /* === Inline nudge cycling === */
@@ -2015,9 +1995,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const sec = document.getElementById('missionSec');
     const card = document.getElementById('missionNudge');
     if (!sec || !card) return;
-    const emptyEl = document.getElementById('missionEmpty');
+    const badge = document.getElementById('missionBadge');
     sec.addEventListener('click', () => {
-      if (emptyEl && !emptyEl.hidden) return;   // 아직 미션 없음(빈 상태) → 펼침 동작 없음
+      if (badge.hidden) return;   // 미션 없음(뱃지 미노출) → 펼침 동작 없음
       const open = card.hidden;
       card.hidden = !open;
       sec.classList.toggle('open', open);
