@@ -417,23 +417,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     font-weight: 500;
     flex: 0 0 auto;
   }
-  .inline-nudge .in-switch {
-    background: rgba(26,166,194,.10);
-    border: 0;
-    color: var(--primary);
-    cursor: pointer;
-    padding: 4px 9px;
-    border-radius: 999px;
-    font-family: var(--font);
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: -.1px;
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .inline-nudge .in-switch:hover { background: var(--primary); color: #fff; }
   /* 개인화 오프닝 (상황 인식) — 작게, 행동 위에 */
   .inline-nudge .in-lead {
     font-family: "Noto Sans KR", sans-serif;
@@ -1939,7 +1922,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         <span class="in-dot"></span>
         <span class="in-cat">${n.cat} · 위협 감지</span>
         <span class="in-time">${n.time}</span>
-        <button class="in-switch" title="맥락 바꾸기">맥락 ↻</button>
       </div>
       <div class="in-lead">${n.lead}</div>
       <div class="in-action">${n.action}</div>
@@ -1949,11 +1931,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         <button class="in-btn in-skip">나중에</button>
       </div>
     `;
-    nudgeMount.querySelector('.in-switch').addEventListener('click', (e) => {
-      e.stopPropagation();
-      nudgeIdx = (nudgeIdx + 1) % NUDGES.length;
-      renderNudge();
-    });
     nudgeMount.querySelector('.in-do').addEventListener('click', (e) => {
       e.stopPropagation();
       onNudgeDone(nudgeIdx);   // 미션 완료 → 갤러리에 보상 추가 + 대시보드로 전환
