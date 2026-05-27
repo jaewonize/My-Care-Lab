@@ -35,7 +35,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     background: #000;
     color: var(--ink);
     min-height: 100vh;
-    padding: 40px;
+    padding: 0;
     display: grid;
     place-items: center;
   }
@@ -54,6 +54,10 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   html.embed body { display: flex; align-items: center; justify-content: center; }
   html.embed .stage-label { display: none; }
   html.embed .phone { box-shadow: none; }
+  /* 단독 실행(모바일): 폰을 화면에 꽉 차게 — 라운딩/그림자 제거 + 스크롤 차단
+     (스케일은 하단 JS가 종횡비 유지하며 처리. 임베드는 영향 없음) */
+  html:not(.embed) body { overflow: hidden; }
+  html:not(.embed) .phone { border-radius: 0; box-shadow: none; }
   /* 시연자용 갤러리 리셋 — 1×2 점수 카드 위, 우측 정렬. 기호만(눈에 안 띄게).
      Slow Museum 테마에서만 노출 (planet·marble은 아직 보상 초기화 대상 아님). */
   .gallery-reset {
@@ -2193,6 +2197,19 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   /* 초기화: 대시보드 시작 + 활성 테마 iframe 로드 */
   setupMuseumIframes();
   showScreen('screen-dashboard');
+
+  /* 단독 실행(모바일): 360×780 폰을 종횡비 유지하며 뷰포트에 꽉 차게 스케일.
+     임베드(피치 슬라이드 iframe)에서는 적용하지 않음. */
+  if (!document.documentElement.classList.contains('embed')) {
+    const _ph = document.getElementById('phone');
+    const _fit = () => {
+      const s = Math.min(window.innerWidth / 360, window.innerHeight / 780);
+      _ph.style.transform = 'scale(' + s + ')';
+      _ph.style.transformOrigin = 'center center';
+    };
+    window.addEventListener('resize', _fit);
+    _fit();
+  }
 </script>
 </body>
 </html>
