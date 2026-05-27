@@ -1922,22 +1922,27 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     { cat: '잘 태우기', time: '오후 6:40',
       lead: '버스로 퇴근 중이시네요.',
       action: '세곡사거리에 내려서 1.2km 걸어가세요',
+      keyword: '세곡사거리 1.2km 걷기',
       reason: '오늘 걸음수 목표의 절반 · 1.2km면 약 1,700보를 더 채워요' },
     { cat: '잘 빠지기', time: '오전 7:02',
       lead: '일어나셨네요.',
       action: '5분 안에 체중을 측정하세요',
+      keyword: '공복 체중 측정',
       reason: '공복 체중이 가장 정확해요 · 어제 측정을 건너뛰었어요' },
     { cat: '잘 빠지기', time: '밤 11:48',
       lead: '쿠팡이츠를 켜셨네요.',
       action: '앱을 닫고 방울토마토를 드세요',
+      keyword: '야식 대신 방울토마토',
       reason: '야식 한 끼가 오늘의 칼로리 적자를 되돌려요 · 저칼로리 간식으로 식욕을 달래보세요' },
     { cat: '잘 태우기', time: '오후 9:30',
       lead: '넷플릭스 보는 중이시네요.',
       action: '잠시 멈추고 스쿼트 20개 하세요',
+      keyword: '스쿼트 20개',
       reason: '2시간째 앉아 있어요 · 짧은 근력 운동이 식후 지방 축적을 막아요' },
     { cat: '잘 태우기', time: '방금',
       lead: '식사를 마치셨군요.',
       action: '바로 율동공원 둘레길 한 바퀴 걸으세요',
+      keyword: '율동공원 둘레길 걷기',
       reason: '최근 3일 걸음수 목표의 60% · 식후 활동이 혈당 스파이크를 눌러요' },
   ];
   let nudgeIdx = 0;
@@ -2125,9 +2130,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     // 이렇게 해야 사용자가 갤러리를 보고 있는 상태에서 '잠깐 멈춤 → 등장'이 일관되게 보임
     // (전환 중에 등장이 진행돼 버려 지연이 안 느껴지던 문제 해결).
     showScreen('screen-dashboard');
-    // 방금 '했어요' 누른 미션 → 작품 획득 경로 캡션으로 매칭 (카테고리 · 행동 키워드)
+    // 방금 '했어요' 누른 미션 → 작품 획득 경로 캡션으로 매칭 (짧은 행동 키워드)
     const doneNudge = NUDGES[catIdx];
-    const rewardCaption = doneNudge ? (doneNudge.cat + ' · ' + doneNudge.action) : '';
+    const rewardCaption = doneNudge ? (doneNudge.keyword || doneNudge.action) : '';
     const frame = document.querySelector('.museum-frame[data-theme="museum"]');
     const gallery = frame && frame.contentWindow && frame.contentWindow.gallery;
     if (gallery) {
