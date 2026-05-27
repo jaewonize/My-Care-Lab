@@ -1261,7 +1261,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .deck-page { position: absolute; left: 0; right: 0; top: 50%;
                display: flex; flex-direction: column; align-items: center; justify-content: center;
                transform: translate(0, -50%); opacity: 1; cursor: pointer;
-               transition: transform .72s cubic-bezier(.66,0,.2,1), opacity .5s ease; will-change: transform, opacity; }
+               transition: transform .72s cubic-bezier(.66,0,.2,1), opacity .5s ease; }
   .deck-page.is-active { transform: translate(0, -50%); opacity: 1; pointer-events: auto; }
   .deck-page.is-below  { transform: translate(0, calc(-50% + 110px)); opacity: 0; pointer-events: none; }
   .deck-page.is-above  { transform: translate(0, calc(-50% - 220px)); opacity: 0; pointer-events: none; }
