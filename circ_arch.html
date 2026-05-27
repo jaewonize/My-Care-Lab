@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>My Care Lab — Circles</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  html, body{
+    margin:0;
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px 24px;
+    background:#F4F2EC;
+    font-family:"Pretendard","Inter",-apple-system,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    color:#2B2A26;
+  }
+  .wrap{ width:800px; max-width:100%; }
+  svg{ display:block; width:100%; height:auto; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<svg viewBox="0 0 800 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="My Care Lab 원형 다이어그램">
+  <defs>
+    <!-- arrowhead for diagonal lines -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9 Z" fill="context-stroke"/>
+    </marker>
+
+    <!-- peanut gradient (blue → taupe) -->
+    <linearGradient id="peanut-grad" x1="230" y1="0" x2="570" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A8CFDB"/>
+      <stop offset="0.42" stop-color="#A8CFDB"/>
+      <stop offset="0.58" stop-color="#D9C49B"/>
+      <stop offset="1" stop-color="#D9C49B"/>
+    </linearGradient>
+  </defs>
+
+  <!--
+    Layout (centered in 800 px viewBox)
+    Left col  x = 310 (4 circles)
+    Right col x = 490 (가용자원, peanut right lobe)
+    r = 80, cusp pull = 18
+
+    Row centers (y):
+    Row 1  y = 110   사용자 건강 고민 입력
+    Row 2  y = 290   에이전트 추론 [L] · 가용 자원 [R, 바로 옆]
+    Row 3  y = 470   PEANUT (솔루션 공동설계 + 솔루션 이행 유도)
+    Row 4  y = 650   사용자 승인 · 수행
+  -->
+
+
+  <!-- ============================================================ -->
+  <!-- 1. 사용자 건강 고민 입력 — GOAL green, ▼ bottom cusp           -->
+  <!-- ============================================================ -->
+  <g>
+    <circle cx="310" cy="110" r="80" fill="#CFE26A"/>
+    <polygon points="301,186 319,186 310,208" fill="#CFE26A"/>
+  </g>
+  <text x="310" y="106" text-anchor="middle" font-size="14" font-weight="700" fill="#2B3A0E" letter-spacing="-0.01em">사용자 건강 고민 입력</text>
+  <text x="310" y="128" text-anchor="middle" font-size="11" fill="#4A5F1F">건강 루틴 솔루션 요청</text>
+
+
+  <!-- ============================================================ -->
+  <!-- 2. 에이전트 추론 — PLAN teal, ▼ bottom cusp                    -->
+  <!-- ============================================================ -->
+  <g>
+    <circle cx="310" cy="290" r="80" fill="#A8DDDB"/>
+    <polygon points="301,366 319,366 310,388" fill="#A8DDDB"/>
+  </g>
+  <text x="310" y="286" text-anchor="middle" font-size="14" font-weight="700" fill="#1F4847" letter-spacing="-0.01em">에이전트 추론</text>
+  <text x="310" y="308" text-anchor="middle" font-size="10.5" fill="#1F4847">의도 분석 · 판단 · 기획 · 연결</text>
+
+
+  <!-- ============================================================ -->
+  <!-- 3. 가용 자원 — mint, ◀ left cusp (right next to 추론)           -->
+  <!-- ============================================================ -->
+  <g>
+    <circle cx="490" cy="290" r="80" fill="#BFE3C7"/>
+    <polygon points="414,281 414,299 392,290" fill="#BFE3C7"/>
+  </g>
+  <text x="490" y="262" text-anchor="middle" font-size="14" font-weight="700" fill="#1F3B27" letter-spacing="-0.01em">가용 자원</text>
+  <text x="490" y="289" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2B5238">· 신체 데이터</text>
+  <text x="490" y="306" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2B5238">· 컨텍스트</text>
+  <text x="490" y="323" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2B5238">· 연결 디바이스</text>
+
+
+  <!-- ============================================================ -->
+  <!-- 4. PEANUT — 솔루션 공동설계 (blue lobe) + 솔루션 이행 유도 (taupe lobe) -->
+  <!-- Left lobe (310,470), Right lobe (490,470), r=80, distance=180 -->
+  <!-- Shoulders at angle ±60° (cos60=0.5, sin60=0.866)              -->
+  <!--   Left lobe shoulders:  (350, 400.7) / (350, 539.3)            -->
+  <!--   Right lobe shoulders: (450, 400.7) / (450, 539.3)            -->
+  <!-- Neck concave curve control points at (400, 425.7) and (400, 514.3) -->
+  <!-- ============================================================ -->
+  <g>
+    <path d="
+      M 310 390
+      A 80 80 0 0 1 350 400.7
+      Q 400 425.7 450 400.7
+      A 80 80 0 1 1 450 539.3
+      Q 400 514.3 350 539.3
+      A 80 80 0 1 1 310 390
+      Z
+    " fill="url(#peanut-grad)"/>
+    <!-- bottom cusp on left lobe → 사용자 승인 -->
+    <polygon points="301,546 319,546 310,568" fill="#A8CFDB"/>
+  </g>
+
+  <!-- Left lobe label -->
+  <text x="310" y="466" text-anchor="middle" font-size="13.5" font-weight="700" fill="#15485B" letter-spacing="-0.01em">1. 솔루션 공동설계</text>
+  <text x="310" y="488" text-anchor="middle" font-size="11" fill="#1F4F62">UI 생성 · 플랜 역산</text>
+
+  <!-- Right lobe label -->
+  <text x="490" y="466" text-anchor="middle" font-size="13.5" font-weight="700" fill="#4A3B1A" letter-spacing="-0.01em">2. 솔루션 이행 유도</text>
+  <text x="490" y="488" text-anchor="middle" font-size="11" fill="#5D4B26">위협 감지 · 보상형 넛징</text>
+
+
+  <!-- ============================================================ -->
+  <!-- 5. 사용자 승인 · 수행 — REWARD coral, terminal                  -->
+  <!-- ============================================================ -->
+  <g>
+    <circle cx="310" cy="650" r="80" fill="#F4B49B"/>
+  </g>
+  <text x="310" y="646" text-anchor="middle" font-size="14" font-weight="700" fill="#4A1B0E" letter-spacing="-0.01em">사용자 승인 · 수행</text>
+  <text x="310" y="668" text-anchor="middle" font-size="11" fill="#5A2417">체크 · 피드백 루프</text>
+
+
+  <!-- (diagonal line arrows removed — flow implied by peanut/cusp layout) -->
+
+</svg>
+</div>
+
+</body>
+</html>

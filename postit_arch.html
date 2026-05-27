@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>My Care Lab — 무드보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  html, body{
+    margin:0;
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:40px 24px;
+    background-color:#E6DCC3;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(120, 90, 55, 0.10) 0, transparent 35%),
+      radial-gradient(circle at 85% 70%, rgba(120, 90, 55, 0.08) 0, transparent 40%),
+      radial-gradient(circle at 50% 95%, rgba(120, 90, 55, 0.07) 0, transparent 45%),
+      radial-gradient(circle at 70% 10%, rgba(255,255,255,0.06) 0, transparent 35%);
+  }
+  .wrap{ width:800px; max-width:100%; }
+  svg{ display:block; width:100%; height:auto; overflow:visible; font-family:"Pretendard", "Inter", -apple-system, system-ui, sans-serif; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="My Care Lab 아키텍처 무드보드">
+  <defs>
+    <!-- soft drop shadow for paper -->
+    <filter id="paper-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2.5" dy="4" stdDeviation="2.2" flood-color="#1a1410" flood-opacity="0.20"/>
+    </filter>
+
+    <!-- hand-drawn wobble for marker strokes -->
+    <filter id="marker-wobble" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" stitchTiles="stitch"/>
+      <feDisplacementMap in="SourceGraphic" scale="1.6"/>
+    </filter>
+
+    <!-- corner fold gradient (paper underside) -->
+    <linearGradient id="fold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.28"/>
+    </linearGradient>
+
+    <!-- hand-drawn arrow head (smaller) -->
+    <marker id="hand-arrow" viewBox="0 0 14 14" refX="11" refY="7" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M1,1.5 L12,7 L1,12.5" fill="none" stroke="context-stroke" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+
+  <!-- ============================================================ -->
+  <!-- STICKY 1: 가용 자원 (yellow, sub-level)                        -->
+  <!-- ============================================================ -->
+  <g transform="rotate(-3.2 255 100)">
+    <g filter="url(#paper-shadow)">
+      <rect x="170" y="30" width="170" height="140" fill="#BFE3C7"/>
+    </g>
+
+    <text x="255" y="56" text-anchor="middle" font-size="14" font-weight="700" fill="#2B2620" letter-spacing="-0.01em">가용 자원</text>
+    <text x="255" y="74" text-anchor="middle" font-size="10.5" fill="#6E5B3A">에이전트가 선제적/능동적으로 탐색</text>
+
+    <!-- three items -->
+    <circle cx="196" cy="106" r="2" fill="#3F362C"/>
+    <text x="205" y="110" font-size="12.5" font-weight="600" fill="#2B2620">신체 데이터</text>
+
+    <circle cx="196" cy="128" r="2" fill="#3F362C"/>
+    <text x="205" y="132" font-size="12.5" font-weight="600" fill="#2B2620">컨텍스트</text>
+
+    <circle cx="196" cy="150" r="2" fill="#3F362C"/>
+    <text x="205" y="154" font-size="12.5" font-weight="600" fill="#2B2620">연결 디바이스</text>
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- STICKY 2: 사용자 건강 고민 입력 (GOAL green)                    -->
+  <!-- ============================================================ -->
+  <g transform="rotate(2.5 540 65)">
+    <g filter="url(#paper-shadow)">
+      <rect x="440" y="24" width="200" height="82" fill="#CFE26A"/>
+    </g>
+
+    <text x="540" y="60" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2620" letter-spacing="-0.01em">사용자 건강 고민 입력</text>
+    <text x="540" y="90" text-anchor="middle" font-size="12" fill="#4A5F1F">건강 루틴 솔루션 요청</text>
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- STICKY 3: 에이전트 추론 (PLAN teal)                             -->
+  <!-- ============================================================ -->
+  <g transform="rotate(-2 540 167)">
+    <g filter="url(#paper-shadow)">
+      <rect x="440" y="126" width="200" height="82" fill="#A8DDDB"/>
+    </g>
+
+    <text x="540" y="162" text-anchor="middle" font-size="16" font-weight="700" fill="#1F4847" letter-spacing="-0.01em">에이전트 추론</text>
+    <text x="540" y="192" text-anchor="middle" font-size="12" fill="#1F4847">의도 분석 · 판단 · 기획 · 연결</text>
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- STICKY 4: ① 솔루션 co-creation (APPROVE blue)                  -->
+  <!-- ============================================================ -->
+  <g transform="rotate(1.8 250 318)">
+    <g filter="url(#paper-shadow)">
+      <rect x="150" y="254" width="200" height="128" fill="#A8CFDB"/>
+    </g>
+
+    <!-- title -->
+    <text x="250" y="292" text-anchor="middle" font-size="16" font-weight="700" fill="#1F4F62" letter-spacing="-0.01em">1. 솔루션 co-creation</text>
+
+    <text x="250" y="348" text-anchor="middle" font-size="13" font-weight="600" fill="#1F4F62">UI 생성 · 플랜 역산</text>
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- STICKY 5: ② 솔루션 이행 유도 (NUDGE kraft)                      -->
+  <!-- ============================================================ -->
+  <g transform="rotate(-1.6 540 318)">
+    <g filter="url(#paper-shadow)">
+      <rect x="440" y="254" width="200" height="128" fill="#D9C49B"/>
+    </g>
+
+    <text x="540" y="292" text-anchor="middle" font-size="16" font-weight="700" fill="#5D4B26" letter-spacing="-0.01em">2. 솔루션 이행 유도</text>
+
+    <text x="540" y="348" text-anchor="middle" font-size="13" font-weight="600" fill="#5D4B26">위협 감지 · 보상형 넛징</text>
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- STICKY 6: 사용자 승인 · 수행 (REWARD coral)                    -->
+  <!-- ============================================================ -->
+  <g transform="rotate(2.8 540 453)">
+    <g filter="url(#paper-shadow)">
+      <rect x="440" y="412" width="200" height="82" fill="#F4B49B"/>
+    </g>
+
+    <text x="540" y="448" text-anchor="middle" font-size="16" font-weight="700" fill="#5A2417" letter-spacing="-0.01em">사용자 승인 · 수행</text>
+    <text x="540" y="478" text-anchor="middle" font-size="12" fill="#5A2417">체크 · 피드백 루프</text>
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- HAND-DRAWN ARROWS (marker style)                               -->
+  <!-- ============================================================ -->
+  <g stroke="#857B6D" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#marker-wobble)">
+
+    <!-- 가용 자원 → 에이전트 추론 -->
+    <path d="M 346 138 Q 390 142 438 155" stroke-width="2" marker-end="url(#hand-arrow)"/>
+
+    <!-- 사용자 건강 고민 입력 → 에이전트 추론 -->
+    <path d="M 542 108 Q 540 118 543 128" stroke-width="2.4" marker-end="url(#hand-arrow)"/>
+
+    <!-- 에이전트 추론 → ① 솔루션 co-creation -->
+    <path d="M 538 212 Q 540 232 480 240 Q 380 248 290 254" stroke-width="2.4" marker-end="url(#hand-arrow)"/>
+
+    <!-- 에이전트 추론 → ② 솔루션 이행 유도 -->
+    <path d="M 548 212 Q 552 232 552 254" stroke-width="2.4" marker-end="url(#hand-arrow)"/>
+
+    <!-- ① → ② 플랜 확정 -->
+    <path d="M 352 319 Q 395 316 442 320" stroke-width="2.4" marker-end="url(#hand-arrow)"/>
+
+    <!-- ② → 사용자 승인 · 수행 -->
+    <path d="M 548 386 Q 552 404 546 416" stroke-width="2.4" marker-end="url(#hand-arrow)"/>
+
+    <!-- ① → 사용자 승인 · 수행 -->
+    <path d="M 260 384 Q 258 434 320 449 Q 380 459 438 456" stroke-width="2.4" marker-end="url(#hand-arrow)"/>
+
+  </g>
+
+  <!-- "플랜 확정" label -->
+  <g transform="rotate(-3 397 304)">
+    <text x="397" y="308" text-anchor="middle" font-size="11" font-weight="600" fill="#3A332C">플랜 확정</text>
+  </g>
+
+</svg>
+</div>
+
+</body>
+</html>

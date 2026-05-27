@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>My Care Lab — 기술 아키텍처</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  html, body {
+    margin: 0;
+    background: #F4F2EC;
+    font-family: "Pretendard", "Inter", -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #2B2A26;
+  }
+  body{
+    min-height: 100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding: 40px 24px;
+  }
+  .wrap{ width: 800px; max-width: 100%; }
+  svg{ display:block; width: 100%; height:auto; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<svg viewBox="0 0 800 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="My Care Lab 기술 아키텍처">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1 L8 5 L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <filter id="card-shadow" x="-10%" y="-30%" width="120%" height="160%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.6" flood-color="#1a1a1a" flood-opacity="0.05"/>
+    </filter>
+  </defs>
+
+  <!--
+    Layout grid
+    Left col   : x = 170 .. 350  (w=180)
+    Main col   : x = 450 .. 630  (w=180)
+    Gap        : 100 (label "플랜 확정" centered at x=400)
+
+    Rows
+    Row 1 (main only)            y=30..90    h=60   사용자 건강 고민 입력
+    Row 2 (main only)            y=110..170  h=60   에이전트 추론
+    Row 3 (left + main)          y=210..250  h=40   솔루션 설계 / 솔루션 이행 (헤더)
+    Row 4 (left + main, paired)  y=258..318  h=60   UI 생성·플랜 역산 / 위협 감지·넛징
+    Row 5 (main only)            y=358..418  h=60   사용자 승인 · 수행
+
+    Resources (top-left area, sub-level)
+    Boxes x=180..340 (w=160, h=28)
+    y=36..64, y=72..100, y=108..136
+  -->
+
+
+  <!-- ============================================================ -->
+  <!-- RESOURCES (top-left) — sub-level: smaller, no shadow           -->
+  <!-- ============================================================ -->
+
+  <text x="260" y="10" text-anchor="middle" font-size="11" font-weight="700" fill="#2B2A26" letter-spacing="0.04em">가용 자원</text>
+  <text x="260" y="22" text-anchor="middle" font-size="9.5" fill="#8A877D">에이전트가 선제적/능동적으로 탐색</text>
+
+  <!-- 신체 데이터 -->
+  <rect x="180" y="30" width="160" height="38" rx="6" fill="#EEEBE2" stroke="#DCD8CB" stroke-width="0.8"/>
+  <circle cx="192" cy="43" r="2.4" fill="#8A877D"/>
+  <text x="200" y="43" font-size="10.5" font-weight="700" fill="#2B2A26" dominant-baseline="central">신체 데이터</text>
+  <text x="200" y="57" font-size="9" fill="#8A877D" dominant-baseline="central">헬스 · 체성분 · 셀피</text>
+
+  <!-- 컨텍스트 -->
+  <rect x="180" y="76" width="160" height="38" rx="6" fill="#EEEBE2" stroke="#DCD8CB" stroke-width="0.8"/>
+  <circle cx="192" cy="89" r="2.4" fill="#8A877D"/>
+  <text x="200" y="89" font-size="10.5" font-weight="700" fill="#2B2A26" dominant-baseline="central">컨텍스트</text>
+  <text x="200" y="103" font-size="9" fill="#8A877D" dominant-baseline="central">메모리 · 라이프스타일</text>
+
+  <!-- 연결 디바이스 -->
+  <rect x="180" y="122" width="160" height="38" rx="6" fill="#EEEBE2" stroke="#DCD8CB" stroke-width="0.8"/>
+  <circle cx="192" cy="135" r="2.4" fill="#8A877D"/>
+  <text x="200" y="135" font-size="10.5" font-weight="700" fill="#2B2A26" dominant-baseline="central">가용 디바이스</text>
+  <text x="200" y="149" font-size="9" fill="#8A877D" dominant-baseline="central">웨어러블 · 체중계 · 카메라</text>
+
+  <!-- bus: top two resources join the bottom arrow line -->
+  <line x1="340" y1="49"  x2="395" y2="49"  stroke="#C4BFB1" stroke-width="0.8"/>
+  <line x1="340" y1="95"  x2="395" y2="95"  stroke="#C4BFB1" stroke-width="0.8"/>
+  <line x1="395" y1="49"  x2="395" y2="141" stroke="#C4BFB1" stroke-width="0.8"/>
+  <!-- straight horizontal arrow from 연결 디바이스 → 에이전트 추론 (solid, match bus weight) -->
+  <line x1="340" y1="141" x2="448" y2="141" stroke="#A8A496" stroke-width="0.8" marker-end="url(#arrow)"/>
+
+
+  <!-- ============================================================ -->
+  <!-- MAIN COLUMN                                                    -->
+  <!-- ============================================================ -->
+
+  <!-- Row 1: 사용자 건강 고민 입력 (GOAL) -->
+  <g filter="url(#card-shadow)">
+    <rect x="450" y="30" width="180" height="60" rx="10" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="450" y="30" width="4" height="60" rx="2" fill="#B4D456"/>
+  </g>
+  <text x="540" y="56" text-anchor="middle" font-size="14" font-weight="700" fill="#2B2A26">사용자 건강 고민 입력</text>
+  <text x="540" y="76" text-anchor="middle" font-size="11.5" fill="#6E6C63">건강 루틴 솔루션 요청</text>
+
+  <!-- arrow row1 → row2 -->
+  <line x1="540" y1="90" x2="540" y2="108" stroke="#A8A496" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Row 2: 에이전트 추론 (PLAN) -->
+  <g filter="url(#card-shadow)">
+    <rect x="450" y="110" width="180" height="60" rx="10" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="450" y="110" width="4" height="60" rx="2" fill="#7DC4C2"/>
+  </g>
+  <text x="540" y="136" text-anchor="middle" font-size="14" font-weight="700" fill="#2B2A26">에이전트 추론</text>
+  <text x="540" y="156" text-anchor="middle" font-size="11.5" fill="#6E6C63">의도 분석 · 판단 · 기획 · 연결</text>
+
+  <!-- split: down from agent, then horizontal back to design column -->
+  <line x1="540" y1="170" x2="540" y2="190" stroke="#A8A496" stroke-width="1"/>
+  <line x1="260" y1="190" x2="540" y2="190" stroke="#A8A496" stroke-width="1"/>
+  <!-- arrow into 솔루션 설계 (left) -->
+  <line x1="260" y1="190" x2="260" y2="208" stroke="#A8A496" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <!-- arrow into 솔루션 이행 (main) -->
+  <line x1="540" y1="190" x2="540" y2="208" stroke="#A8A496" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+
+  <!-- ============================================================ -->
+  <!-- Row 3: headers (left = 솔루션 설계, main = 솔루션 이행)        -->
+  <!-- ============================================================ -->
+
+  <!-- 솔루션 설계 (header) APPROVE blue -->
+  <g filter="url(#card-shadow)">
+    <rect x="170" y="210" width="180" height="40" rx="8" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="170" y="210" width="4" height="40" rx="2" fill="#4FA1B6"/>
+  </g>
+  <text x="260" y="230" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2B2A26" dominant-baseline="central">① 솔루션 설계</text>
+
+  <!-- 솔루션 이행 (header) NUDGE taupe -->
+  <g filter="url(#card-shadow)">
+    <rect x="450" y="210" width="180" height="40" rx="8" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="450" y="210" width="4" height="40" rx="2" fill="#B5A88A"/>
+  </g>
+  <text x="540" y="230" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2B2A26" dominant-baseline="central">② 솔루션 이행 유도</text>
+
+  <!-- 플랜 확정: arrow from 솔루션 설계 → 솔루션 이행 (lots of room now) -->
+  <text x="400" y="222" text-anchor="middle" font-size="11" fill="#6E6C63">플랜 확정</text>
+  <line x1="354" y1="230" x2="448" y2="230" stroke="#A8A496" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+
+  <!-- ============================================================ -->
+  <!-- Row 4: detail cards                                            -->
+  <!-- ============================================================ -->
+
+  <!-- UI 생성 · 플랜 역산 (left detail) -->
+  <g filter="url(#card-shadow)">
+    <rect x="170" y="258" width="180" height="60" rx="10" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="170" y="258" width="4" height="60" rx="2" fill="#4FA1B6"/>
+  </g>
+  <text x="260" y="284" text-anchor="middle" font-size="13" font-weight="700" fill="#2B2A26">UI 생성 · 플랜 역산</text>
+  <text x="260" y="304" text-anchor="middle" font-size="11.5" fill="#6E6C63">co-creation</text>
+
+  <!-- 위협 감지 · 넛징 (main detail) -->
+  <g filter="url(#card-shadow)">
+    <rect x="450" y="258" width="180" height="60" rx="10" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="450" y="258" width="4" height="60" rx="2" fill="#B5A88A"/>
+  </g>
+  <text x="540" y="284" text-anchor="middle" font-size="13" font-weight="700" fill="#2B2A26">위협 감지 · 미션 넛징</text>
+  <text x="540" y="304" text-anchor="middle" font-size="11.5" fill="#6E6C63">행동 유도 · 보상 지급</text>
+
+
+  <!-- arrow row4 (위협 감지·넛징) → row5 (사용자 승인·수행) -->
+  <line x1="540" y1="318" x2="540" y2="356" stroke="#A8A496" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- L-shape arrow: UI 생성·플랜 역산 → 사용자 승인·수행 -->
+  <path d="M 260 318 L 260 384 Q 260 388 264 388 L 448 388"
+        fill="none" stroke="#A8A496" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+
+  <!-- ============================================================ -->
+  <!-- Row 5: 사용자 승인 · 수행 (REWARD)                             -->
+  <!-- ============================================================ -->
+
+  <g filter="url(#card-shadow)">
+    <rect x="450" y="358" width="180" height="60" rx="10" fill="#FFFFFF" stroke="#E6E2D7"/>
+    <rect x="450" y="358" width="4" height="60" rx="2" fill="#F4A78D"/>
+  </g>
+  <text x="540" y="384" text-anchor="middle" font-size="14" font-weight="700" fill="#2B2A26">사용자 승인 · 수행</text>
+  <text x="540" y="404" text-anchor="middle" font-size="11.5" fill="#6E6C63">체크 · 피드백 루프</text>
+
+</svg>
+</div>
+
+</body>
+</html>
