@@ -2067,6 +2067,14 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     #phone-title .pt-eyebrow { display: block !important; }
   `;
 
+  /* 모바일 상단 상태바 색(theme-color)을 현재 화면/테마 톤에 맞춰 갱신 → 상단 띠가 화면과 어우러짐 */
+  const BAR_COLORS = { museum: '#ded6cb', planet: '#d9e9e6', marble: '#fffbf7' };
+  function setBarColor() {
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (!m) return;
+    const onDash = document.getElementById('screen-dashboard').classList.contains('active');
+    m.setAttribute('content', onDash ? (BAR_COLORS[activeTheme] || '#eef5f1') : '#eef5f1');
+  }
   function applyActiveTheme() {
     document.getElementById('phone').dataset.theme = activeTheme;   // 글래스 토큰 전환
     const loading = document.getElementById('museum-loading');
@@ -2078,6 +2086,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         else if (loading) loading.hidden = true;
       }
     });
+    setBarColor();
   }
   function updateThemeDots() {
     document.querySelectorAll('#theme-dots .theme-dot').forEach(d => {
@@ -2201,6 +2210,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const active = document.querySelector('.museum-frame.active');
     const fn = (id === 'screen-dashboard') ? '__resumeRender' : '__pauseRender';
     try { active && active.contentWindow && active.contentWindow[fn] && active.contentWindow[fn](); } catch (e) {}
+    setBarColor();
   };
 
   /* 초기화: 대시보드 시작 + 활성 테마 iframe 로드 */
