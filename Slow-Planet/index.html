@@ -303,6 +303,7 @@ const CAM_Z = 10;
 const CAM_X = 0.35;     // 가로 오프셋(+ = 지구 왼쪽으로)
 const CAM_Y = -0.1;     // 세로 오프셋(+ = 지구 아래로 / − = 위로)
 const FULL_Z = 13;      // 허공 클릭 시 풀샷 줌(전체 지구 보이게, 중앙)
+const FULL_Y = -1.0;    // 풀샷 시 카메라 Y(− = 지구를 화면 위로 올려 하단 카드에 안 가리게)
 const Z_MIN = 3;     // 최대 확대
 const Z_MAX = 13;    // 최대 축소 (FULL_Z 풀샷까지 핀치로 줌아웃 가능)
 camera.position.set(CAM_X, CAM_Y, CAM_Z);
@@ -736,7 +737,7 @@ function resetView() {
 
 // 허공 클릭 → 지구 전체가 보이는 풀샷 (중앙 정렬 + 줌아웃, 회전은 유지)
 function fullShotView() {
-  camera.position.set(0, 0, FULL_Z);
+  camera.position.set(0, FULL_Y, FULL_Z);
   viewOX = 0; viewOY = 0;
   applyViewOffset();
   _velX = 0; _velY = 0;
