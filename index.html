@@ -1255,21 +1255,18 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .pull q em { font-style: normal; }
   .pull p { margin-top: 18px; font-family: var(--font-mix); font-size: 18px; line-height: 1.5; color: var(--ink-2); letter-spacing: -.2px; font-weight: 500; max-width: 440px; }
   .pull p b { color: var(--ink); font-weight: 700; }
-  .col-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; transform: translateY(70px); }
+  .col-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; transform: translateY(40px); }
   /* 센터부 = 2장짜리 deck (버블 다이어그램 ↔ 아키텍처 차트) — 클릭하면 페이지 전환 */
-  .deck-hint { font-family: var(--font-sans); font-size: 12.5px; letter-spacing: .02em; color: var(--ink-2);
-               opacity: .55; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 7px; user-select: none; pointer-events: none; }
-  .deck-hint .dh-ico { font-size: 13px; line-height: 1; transform: translateY(.5px); }
-  .deck { position: relative; width: 100%; height: 440px; }
+  .deck { position: relative; width: 100%; height: 660px; }
   .deck-page { position: absolute; left: 0; right: 0; top: 50%;
                display: flex; flex-direction: column; align-items: center; justify-content: center;
                transform: translate(0, -50%); opacity: 1; cursor: pointer;
                transition: transform .72s cubic-bezier(.66,0,.2,1), opacity .5s ease; will-change: transform, opacity; }
   .deck-page.is-active { transform: translate(0, -50%); opacity: 1; pointer-events: auto; }
-  .deck-page.is-below  { transform: translate(0, calc(-50% + 90px)); opacity: 0; pointer-events: none; }
-  .deck-page.is-above  { transform: translate(0, calc(-50% - 180px)); opacity: 0; pointer-events: none; }
+  .deck-page.is-below  { transform: translate(0, calc(-50% + 110px)); opacity: 0; pointer-events: none; }
+  .deck-page.is-above  { transform: translate(0, calc(-50% - 220px)); opacity: 0; pointer-events: none; }
   .deck-page.no-anim   { transition: none; }
-  .chart-page svg { width: 100%; max-width: 720px; height: auto; display: block; }
+  .chart-page svg { width: 100%; max-width: 740px; height: auto; display: block; }
   .flow { width: 100%; display: flex; flex-direction: column; align-items: center; }
   .bubbles { display: flex; align-items: center; justify-content: center; height: 280px; width: 100%; transform: scale(.81); transform-origin: center; }
   .bubbles > * { flex-shrink: 0; }
@@ -1318,7 +1315,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
       <!-- ═══ CENTER · 5단계 루프 ↔ 아키텍처 차트 (클릭 전환) ═══ -->
       <div class="col-center">
-        <div class="deck-hint" id="deckHint"><span class="dh-ico">⇅</span> 클릭하여 전환</div>
         <div class="deck" id="flowDeck">
         <div class="deck-page bubbles-page is-active">
         <div class="flow">
@@ -1346,7 +1342,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
         <!-- 페이지 2: 기술 아키텍처 차트 -->
         <div class="deck-page chart-page is-below">
-          <svg viewBox="0 0 800 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="My Care Lab 기술 아키텍처">
+          <svg viewBox="160 -12 480 442" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="My Care Lab 기술 아키텍처">
             <defs>
               <marker id="arch-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                 <path d="M2 1 L8 5 L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1473,7 +1469,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     var deck = document.getElementById('flowDeck');
     if (!deck) return;
     var pages = [].slice.call(deck.querySelectorAll('.deck-page'));
-    var hint = document.getElementById('deckHint');
     var cur = 0, busy = false;
     function flip() {
       if (busy) return;
@@ -1494,7 +1489,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       inc.classList.remove('is-below');
       inc.classList.add('is-active');
       cur = next;
-      if (hint) hint.style.opacity = '';   // 전환 후에도 힌트 유지
       setTimeout(function () { busy = false; }, 740);
     }
     pages.forEach(function (p) { p.addEventListener('click', flip); });
