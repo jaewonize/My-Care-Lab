@@ -2230,7 +2230,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     /* 숨은 제스처: 상단 가장자리 더블탭 → 새로고침 (시연용, 화면엔 안 보임).
        갤러리 iframe 위에서도 먹히도록 부모에 투명 히트존을 둠. */
     const _hit = document.createElement('div');
-    _hit.style.cssText = 'position:fixed;left:0;right:0;top:0;height:40px;z-index:99999;background:transparent;';
+    _hit.style.cssText = 'position:fixed;left:0;right:0;top:0;height:64px;z-index:99999;background:transparent;';
     let _lastTap = 0;
     _hit.addEventListener('pointerup', () => {
       const now = Date.now();
