@@ -2221,10 +2221,16 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
      넘치는 좌우 가장자리는 body overflow:hidden으로 클립. 임베드(피치 슬라이드)에서는 미적용. */
   if (!document.documentElement.classList.contains('embed')) {
     const _ph = document.getElementById('phone');
+    // 뷰포트 정중앙에 고정 배치 (body가 폰 높이로 늘어나 중앙이 어긋나던 문제 방지)
+    _ph.style.position = 'fixed';
+    _ph.style.left = '50%';
+    _ph.style.top = '50%';
+    _ph.style.transformOrigin = 'center center';
     const _fit = () => {
-      const s = Math.max(window.innerWidth / 360, window.innerHeight / 780);  // cover
-      _ph.style.transformOrigin = 'center center';
-      _ph.style.transform = 'scale(' + s + ')';
+      // 세로 맞춤: 전체 높이를 항상 채워 하단 탭바/입력창이 절대 잘리지 않게.
+      // (풀스크린 PWA에선 좌우 살짝 넘쳐 클립=여백 없음 / 주소창 있는 브라우저에선 좌우 얇은 여백)
+      const s = window.innerHeight / 780;
+      _ph.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
     };
     window.addEventListener('resize', _fit);
     _fit();
@@ -2232,7 +2238,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     /* 숨은 제스처: 상단 가장자리 더블탭 → 새로고침 (시연용, 화면엔 안 보임).
        갤러리 iframe 위에서도 먹히도록 부모에 투명 히트존을 둠. */
     const _hit = document.createElement('div');
-    _hit.style.cssText = 'position:fixed;left:0;right:0;top:0;height:64px;z-index:99999;background:transparent;';
+    _hit.style.cssText = 'position:fixed;left:0;right:110px;top:0;height:64px;z-index:99999;background:transparent;';  // 우측 110px는 테마 도트용으로 비움
     let _lastTap = 0;
     _hit.addEventListener('pointerup', () => {
       const now = Date.now();
