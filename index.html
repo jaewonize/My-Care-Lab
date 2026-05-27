@@ -1355,13 +1355,20 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
               <marker id="pa-arrow" viewBox="0 0 14 14" refX="11" refY="7" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                 <path d="M1,1.5 L12,7 L1,12.5" fill="none" stroke="context-stroke" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </marker>
+              <!-- 버블 다이어그램처럼 밝은 톤 → 깊은 톤 그라데이션 (135°) -->
+              <linearGradient id="pg-res"    x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#CFF1D3"/><stop offset="100%" stop-color="#A3DEAC"/></linearGradient>
+              <linearGradient id="pg-goal"   x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#DEEF82"/><stop offset="100%" stop-color="#C2DE55"/></linearGradient>
+              <linearGradient id="pg-plan"   x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ADEBE0"/><stop offset="100%" stop-color="#74D2C4"/></linearGradient>
+              <linearGradient id="pg-appr"   x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#B7E6F3"/><stop offset="100%" stop-color="#80CBE4"/></linearGradient>
+              <linearGradient id="pg-nudge"  x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F3E1AB"/><stop offset="100%" stop-color="#DEC176"/></linearGradient>
+              <linearGradient id="pg-reward" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFCFB8"/><stop offset="100%" stop-color="#FF9F82"/></linearGradient>
             </defs>
 
             <!-- 배경 없음 — index.html 슬라이드 종이가 그대로 배경 -->
 
             <!-- STICKY 1: 가용 자원 -->
             <g transform="rotate(-3.2 255 100)">
-              <g filter="url(#pa-shadow)"><rect x="170" y="30" width="170" height="140" fill="#BFE3C7"/></g>
+              <g filter="url(#pa-shadow)"><rect x="170" y="30" width="170" height="140" fill="url(#pg-res)"/></g>
               <text x="255" y="56" text-anchor="middle" font-size="14" font-weight="700" fill="#2B2620" letter-spacing="-0.01em">가용 자원</text>
               <text x="255" y="74" text-anchor="middle" font-size="10.5" fill="#6E5B3A">에이전트가 선제적/능동적으로 탐색</text>
               <circle cx="196" cy="106" r="2" fill="#3F362C"/><text x="205" y="110" font-size="12.5" font-weight="600" fill="#2B2620">신체 데이터</text>
@@ -1371,35 +1378,35 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 
             <!-- STICKY 2: 사용자 건강 고민 입력 (GOAL) -->
             <g transform="rotate(2.5 540 65)">
-              <g filter="url(#pa-shadow)"><rect x="440" y="24" width="200" height="82" fill="#CFE26A"/></g>
+              <g filter="url(#pa-shadow)"><rect x="440" y="24" width="200" height="82" fill="url(#pg-goal)"/></g>
               <text x="540" y="58" text-anchor="middle" font-size="16" font-weight="700" fill="#2B2620" letter-spacing="-0.01em">사용자 건강 고민 입력</text>
               <text x="540" y="78" text-anchor="middle" font-size="12" fill="#4A5F1F">건강 루틴 솔루션 요청</text>
             </g>
 
             <!-- STICKY 3: 에이전트 추론 (PLAN) -->
             <g transform="rotate(-2 540 167)">
-              <g filter="url(#pa-shadow)"><rect x="440" y="126" width="200" height="82" fill="#A8DDDB"/></g>
+              <g filter="url(#pa-shadow)"><rect x="440" y="126" width="200" height="82" fill="url(#pg-plan)"/></g>
               <text x="540" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="#1F4847" letter-spacing="-0.01em">에이전트 추론</text>
               <text x="540" y="180" text-anchor="middle" font-size="12" fill="#1F4847">의도 분석 · 판단 · 기획 · 연결</text>
             </g>
 
             <!-- STICKY 4: ① 솔루션 co-creation (APPROVE) -->
             <g transform="rotate(1.8 250 318)">
-              <g filter="url(#pa-shadow)"><rect x="150" y="254" width="200" height="128" fill="#A8CFDB"/></g>
+              <g filter="url(#pa-shadow)"><rect x="150" y="254" width="200" height="128" fill="url(#pg-appr)"/></g>
               <text x="250" y="310" text-anchor="middle" font-size="16" font-weight="700" fill="#1F4F62" letter-spacing="-0.01em">1. 솔루션 co-creation</text>
               <text x="250" y="332" text-anchor="middle" font-size="13" font-weight="600" fill="#1F4F62">UI 생성 · 플랜 역산</text>
             </g>
 
             <!-- STICKY 5: ② 솔루션 이행 유도 (NUDGE) -->
             <g transform="rotate(-1.6 540 318)">
-              <g filter="url(#pa-shadow)"><rect x="440" y="254" width="200" height="128" fill="#D9C49B"/></g>
+              <g filter="url(#pa-shadow)"><rect x="440" y="254" width="200" height="128" fill="url(#pg-nudge)"/></g>
               <text x="540" y="310" text-anchor="middle" font-size="16" font-weight="700" fill="#5D4B26" letter-spacing="-0.01em">2. 솔루션 이행 유도</text>
               <text x="540" y="332" text-anchor="middle" font-size="13" font-weight="600" fill="#5D4B26">위협 감지 · 보상형 넛징</text>
             </g>
 
             <!-- STICKY 6: 사용자 승인 · 수행 (REWARD) -->
             <g transform="rotate(2.8 540 453)">
-              <g filter="url(#pa-shadow)"><rect x="440" y="412" width="200" height="82" fill="#F4B49B"/></g>
+              <g filter="url(#pa-shadow)"><rect x="440" y="412" width="200" height="82" fill="url(#pg-reward)"/></g>
               <text x="540" y="446" text-anchor="middle" font-size="16" font-weight="700" fill="#5A2417" letter-spacing="-0.01em">사용자 승인 · 수행</text>
               <text x="540" y="466" text-anchor="middle" font-size="12" fill="#5A2417">체크 · 피드백 루프</text>
             </g>
