@@ -945,7 +945,9 @@ function showArtLabel(data) {
   const isFrame = data.zone !== 'move';
   const name = isFrame ? (data.group.userData._art || '') : (data.group.userData._sculpt || '');
   _alTitleEl.textContent = name || '(제목 미정)';
-  _alMetaEl.innerHTML = `획득일 ${LOADED_AT_STR}<br>${REWARD_MSG[data.zone] || ''}`;
+  // 획득 경로: '했어요'로 채워진 작품은 그때 매칭된 미션 키워드, 초기 셋팅 작품은 기존 문구 유지
+  const rewardMsg = data.group.userData._rewardMsg || REWARD_MSG[data.zone] || '';
+  _alMetaEl.innerHTML = `획득일 ${LOADED_AT_STR}<br>${rewardMsg}`;
   // 작품 기준 위치: (작품+전시대) 바운딩박스 바닥 중앙 = 앵커 → 매 프레임 화면 투영
   _alBox.setFromObject(data.group);
   _alAnchor.set((_alBox.min.x + _alBox.max.x) / 2, _alBox.min.y, (_alBox.min.z + _alBox.max.z) / 2);
@@ -1325,14 +1327,15 @@ window.__scores = scores;
        빈 액자가 있는 벽 중 우선 portrait(groom) → random other
        에서 빈 슬롯 하나 골라, 해당 벽 시퀀스의 미사용 그림 무작위 로드. */
 window.gallery = {
-  addSculpture(slotIdx, name) {
+  addSculpture(slotIdx, name, caption) {
     const ped = zones.move.items[slotIdx];
     if (!ped || ped.userData._sculpt) return false;
     ped.userData._sculpt = name;
+    if (caption) ped.userData._rewardMsg = caption;   // 미션 키워드를 획득 경로로 매칭
     _loadSculptureToPed(ped, true);   // fade-in
     return true;
   },
-  addPainting(preferZone) {
+  addPainting(preferZone, caption) {
     const pickZone = (zk) => {
       const empties = zones[zk] ? zones[zk].items.filter(f => f.userData._empty) : [];
       return empties.length ? empties[Math.floor(Math.random() * empties.length)] : null;
@@ -1361,6 +1364,7 @@ window.gallery = {
       entry = candidates[Math.floor(Math.random() * candidates.length)];
     }
     _loadPaintingToFrame(f, zk, entry, true);   // fade-in
+    if (caption) f.userData._rewardMsg = caption;   // 미션 키워드를 획득 경로로 매칭
     return { zone: zk, name: entry.replace(/!$/, '') };
   },
   getCounts() {

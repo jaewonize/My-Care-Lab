@@ -2125,17 +2125,20 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     // 이렇게 해야 사용자가 갤러리를 보고 있는 상태에서 '잠깐 멈춤 → 등장'이 일관되게 보임
     // (전환 중에 등장이 진행돼 버려 지연이 안 느껴지던 문제 해결).
     showScreen('screen-dashboard');
+    // 방금 '했어요' 누른 미션 → 작품 획득 경로 캡션으로 매칭 (카테고리 · 행동 키워드)
+    const doneNudge = NUDGES[catIdx];
+    const rewardCaption = doneNudge ? (doneNudge.cat + ' · ' + doneNudge.action) : '';
     const frame = document.querySelector('.museum-frame[data-theme="museum"]');
     const gallery = frame && frame.contentWindow && frame.contentWindow.gallery;
     if (gallery) {
       setTimeout(() => {
         // 미션 순서대로 지정된 보상 슬롯 채움 (도착 후 추가 → fade-in)
-        if (n === 1) gallery.addSculpture(1, 'thrower');        // 앞열 가운데 전시대
-        else if (n === 2) gallery.addSculpture(0, 'nike');      // 앞열 왼쪽 전시대
-        else if (n === 3) gallery.addPainting('groom');         // 전면 초상화 (왼쪽 2번째)
-        else if (n === 4) gallery.addPainting('rest');          // 왼쪽 안쪽 풍경화
-        else if (n === 5) gallery.addPainting('manage');        // 오른쪽 안쪽 추상화
-        else gallery.addPainting();
+        if (n === 1) gallery.addSculpture(1, 'thrower', rewardCaption);   // 앞열 가운데 전시대
+        else if (n === 2) gallery.addSculpture(0, 'nike', rewardCaption); // 앞열 왼쪽 전시대
+        else if (n === 3) gallery.addPainting('groom', rewardCaption);    // 전면 초상화 (왼쪽 2번째)
+        else if (n === 4) gallery.addPainting('rest', rewardCaption);     // 왼쪽 안쪽 풍경화
+        else if (n === 5) gallery.addPainting('manage', rewardCaption);   // 오른쪽 안쪽 추상화
+        else gallery.addPainting(undefined, rewardCaption);
       }, 600);   // 화면 전환(~0.3s) 후 도착 시점에 등장
     }
     // 완료한 미션은 다음 미션으로 교체하고, 카드는 펼쳐진 채로 둔다
