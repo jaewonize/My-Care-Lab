@@ -2207,14 +2207,22 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   setupMuseumIframes();
   showScreen('screen-dashboard');
 
-  /* 단독 실행(모바일): 360×780 폰을 종횡비 유지하며 뷰포트에 꽉 차게 스케일.
-     임베드(피치 슬라이드 iframe)에서는 적용하지 않음. */
+  /* 단독 실행(모바일): 상단 상태바 높이(36px)를 잘라낸 360×744 가시영역을
+     종횡비 유지하며 뷰포트에 꽉 차게 배치. 임베드(피치 슬라이드)에서는 미적용. */
   if (!document.documentElement.classList.contains('embed')) {
     const _ph = document.getElementById('phone');
+    const W = 360, H = 780, CROP = 36, Hv = H - CROP;   // 가시영역 360×744
+    document.body.style.display = 'block';              // 그리드 센터링 해제 (직접 배치)
+    _ph.style.position = 'absolute';
+    _ph.style.left = '0';
+    _ph.style.top = '0';
+    _ph.style.transformOrigin = '0 0';
+    _ph.style.clipPath = 'inset(' + CROP + 'px 0 0 0)';  // 상단 36px 잘라내기
     const _fit = () => {
-      const s = Math.min(window.innerWidth / 360, window.innerHeight / 780);
-      _ph.style.transform = 'scale(' + s + ')';
-      _ph.style.transformOrigin = 'center center';
+      const s = Math.min(window.innerWidth / W, window.innerHeight / Hv);
+      const offX = (window.innerWidth - W * s) / 2;
+      const offY = (window.innerHeight - Hv * s) / 2;
+      _ph.style.transform = 'translate(' + offX + 'px,' + (offY - CROP * s) + 'px) scale(' + s + ')';
     };
     window.addEventListener('resize', _fit);
     _fit();
