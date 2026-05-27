@@ -1093,7 +1093,11 @@ window.addEventListener('pointermove', e => {
   p.x = e.clientX; p.y = e.clientY;
 
   if (pinching && pointers.size >= 2) {
-    if (mode === 'free') applyZoom(pinchF0 * pinchD0 / Math.max(1, pinchDist()));
+    if (mode === 'free') {
+      const _tf = pinchF0 * pinchD0 / Math.max(1, pinchDist());
+      if (_tf > ZOOM_MAX) { pinching = false; enterOverview(); }   // 핀치 줌아웃 한계 → 부감 오버뷰 (모바일에서도 진입)
+      else applyZoom(_tf);
+    }
     return;
   }
   if (pointers.size === 1) {

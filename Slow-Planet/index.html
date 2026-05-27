@@ -304,7 +304,7 @@ const CAM_X = 0.35;     // 가로 오프셋(+ = 지구 왼쪽으로)
 const CAM_Y = -0.1;     // 세로 오프셋(+ = 지구 아래로 / − = 위로)
 const FULL_Z = 13;      // 허공 클릭 시 풀샷 줌(전체 지구 보이게, 중앙)
 const Z_MIN = 3;     // 최대 확대
-const Z_MAX = 10;    // 최대 축소
+const Z_MAX = 13;    // 최대 축소 (FULL_Z 풀샷까지 핀치로 줌아웃 가능)
 camera.position.set(CAM_X, CAM_Y, CAM_Z);
 
 // 조명 — 모두 world 공간 고정. 균등한 base 광(ambient+hemi) + 약한 한 방향 sun.
