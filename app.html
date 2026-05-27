@@ -65,6 +65,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
      (스케일은 하단 JS가 종횡비 유지하며 처리. 임베드는 영향 없음) */
   html:not(.embed) body { overflow: hidden; }
   html:not(.embed) .phone { border-radius: 0; box-shadow: none; }
+  /* 단독 실행: 실제 폰 상태바와 중복되는 가짜 상태바(목업) 숨김 */
+  html:not(.embed) .statusbar { display: none; }
   /* 시연자용 갤러리 리셋 — 1×2 점수 카드 위, 우측 정렬. 기호만(눈에 안 띄게).
      Slow Museum 테마에서만 노출 (planet·marble은 아직 보상 초기화 대상 아님). */
   .gallery-reset {
