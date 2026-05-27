@@ -2070,10 +2070,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   /* 모바일 상단 상태바 색(theme-color)을 현재 화면/테마 톤에 맞춰 갱신 → 상단 띠가 화면과 어우러짐 */
   const BAR_COLORS = { museum: '#ded6cb', planet: '#d9e9e6', marble: '#fffbf7' };
   function setBarColor() {
-    const m = document.querySelector('meta[name="theme-color"]');
-    if (!m) return;
     const onDash = document.getElementById('screen-dashboard').classList.contains('active');
-    m.setAttribute('content', onDash ? (BAR_COLORS[activeTheme] || '#eef5f1') : '#eef5f1');
+    const c = onDash ? (BAR_COLORS[activeTheme] || '#eef5f1') : '#eef5f1';
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', c);                 // 모바일 상태바 틴트
+    if (!document.documentElement.classList.contains('embed')) document.body.style.background = c;  // contain 가장자리 여백 색(검정 바 방지)
   }
   function applyActiveTheme() {
     document.getElementById('phone').dataset.theme = activeTheme;   // 글래스 토큰 전환
@@ -2227,9 +2228,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     _ph.style.top = '50%';
     _ph.style.transformOrigin = 'center center';
     const _fit = () => {
-      // 세로 맞춤: 전체 높이를 항상 채워 하단 탭바/입력창이 절대 잘리지 않게.
-      // (풀스크린 PWA에선 좌우 살짝 넘쳐 클립=여백 없음 / 주소창 있는 브라우저에선 좌우 얇은 여백)
-      const s = window.innerHeight / 780;
+      // contain(맞춤): 전체가 잘리지 않게 가로·세로 중 작은 비율로 맞춤.
+      // 남는 가장자리는 setBarColor가 화면 색으로 칠해 검정 바가 안 보이게 함.
+      const s = Math.min(window.innerWidth / 360, window.innerHeight / 780);
       _ph.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
     };
     window.addEventListener('resize', _fit);
