@@ -2026,6 +2026,16 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     }
   }
 
+  /* 갤러리 단독감상(focus) 진입/이탈 시 점수 카드 오버레이 숨김/복원
+     — 작품 아래 캡션(작품명·획득경로·날짜)이 점수 카드에 가려지지 않도록.
+     Slow Museum iframe이 window.parent.__museumSolo(true/false)로 호출. */
+  window.__museumSolo = function (solo) {
+    const sc = document.getElementById('score-cards');
+    if (sc) sc.style.display = solo ? 'none' : '';
+    const gr = document.getElementById('galleryReset');
+    if (gr) gr.style.display = solo ? 'none' : '';
+  };
+
   /* 각 테마 iframe에 주입: 배경 투명·컨트롤 패널/내부 점수카드 숨김·라운딩 제거(부모 .phone이 36px 클립) */
   const FRAME_INJECT_CSS = `
     html, body { background: transparent !important; }

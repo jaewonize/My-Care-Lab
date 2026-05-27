@@ -952,12 +952,15 @@ function showArtLabel(data) {
   _artLabelEl.classList.add('show');
   _alShown = true;
   if (_cardsEl) _cardsEl.style.display = 'none';   // 단독감상: 점수카드 숨겨 캡션 영역 확보(제거됨 → 가드)
+  // 부모(app.html)의 점수 카드 오버레이도 숨김 — 캡션이 가려지지 않도록
+  try { window.parent && window.parent !== window && window.parent.__museumSolo && window.parent.__museumSolo(true); } catch (e) {}
   updateArtLabelPos();
 }
 function hideArtLabel() {
   _artLabelEl.classList.remove('show');
   _alShown = false;
   if (_cardsEl) _cardsEl.style.display = '';
+  try { window.parent && window.parent !== window && window.parent.__museumSolo && window.parent.__museumSolo(false); } catch (e) {}
 }
 // (작품+전시대) 바닥선을 화면 투영 → 그 20px 아래에 라벨 (조각·그림 동일 규칙)
 function updateArtLabelPos() {
