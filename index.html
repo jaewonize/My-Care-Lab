@@ -1255,7 +1255,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .pull q em { font-style: normal; }
   .pull p { margin-top: 18px; font-family: var(--font-mix); font-size: 18px; line-height: 1.5; color: var(--ink-2); letter-spacing: -.2px; font-weight: 500; max-width: 440px; }
   .pull p b { color: var(--ink); font-weight: 700; }
-  .col-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; transform: translateY(40px); }
+  .col-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; transform: translateY(86px); }
   /* 센터부 = 2장짜리 deck (버블 다이어그램 ↔ 아키텍처 차트) — 클릭하면 페이지 전환 */
   .deck { position: relative; width: 100%; height: 788px; }
   .deck-page { position: absolute; inset: 0;
@@ -1263,8 +1263,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
                opacity: 1; cursor: pointer;
                transition: transform .72s cubic-bezier(.66,0,.2,1), opacity .5s ease; }
   .deck-page.is-active { transform: none; opacity: 1; pointer-events: auto; }
-  /* 차트(2페이지)만 디바이스 세로 중앙에 맞추기 위해 40px 위로 (1페이지 버블 위치는 불변) */
-  .deck-page.chart-page.is-active { transform: translateY(-40px); }
+  /* 차트(2페이지)만 디바이스 세로 중앙에 맞추기 위해 위로 보정 (1페이지 버블 위치는 col-center translateY로 별도 유지) */
+  .deck-page.chart-page.is-active { transform: translateY(-86px); }
   .deck-page.is-below  { transform: translateY(120px); opacity: 0; pointer-events: none; }
   .deck-page.is-above  { transform: translateY(-240px); opacity: 0; pointer-events: none; }
   .deck-page.no-anim   { transition: none; }
