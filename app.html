@@ -700,9 +700,13 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .connect-row.is-skeleton .sk-line.w70 { width: 70%; }
   .connect-row.is-skeleton .sk-line.w50 { width: 50%; }
   .connect-row.is-skeleton .sk-tag  { width: 36px; height: 18px; border-radius: 999px; }
-  /* 채워질 때 row 페이드인 */
+  /* 채워질 때 페이드인 (range: row / hero / cat 등 모두) */
+  .reveal,
   .connect-row.reveal { animation: rowFadeIn .35s ease forwards; }
   @keyframes rowFadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+  /* 스켈레톤 .date-opt — 실 .date-opt와 동일 크기, hover 비활성 */
+  .date-opt.is-skeleton { cursor: default; pointer-events: none; gap: 12px; }
+  .date-opt.is-skeleton:hover { background: rgba(255,255,255,.6); }
 
   /* Quick reply chips */
   .quick-replies { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 2px; }
@@ -1993,34 +1997,51 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     card.className = 'ui-card';
     const mem = MEMORY_EVENTS.map(e => ({ key:e.key, title:e.title, date:e.date, days:dday(e.date) }));
     const optHTML = (o, sel) => `<label class="date-opt${sel?' selected':''}" data-key="${o.key}" data-days="${o.days}"><input type="radio" name="t"${sel?' checked':''}/><div class="date-body"><div class="date-title">${o.title}</div><div class="date-sub">${fmtDate(o.date)}</div></div><div class="date-day">D-${o.days}</div><div class="date-bullet"></div></label>`;
-    // 직접 입력: 선택 시 날짜 입력 노출
-    const minDate = fmtDate(addMonths(TODAY, 0)).replace(/\./g,'-').replace(/-$/,'');
     const customHTML = `<label class="date-opt date-opt-custom" data-key="custom"><input type="radio" name="t"/><div class="date-body"><div class="date-title">직접 입력</div><div class="date-sub">원하는 목표 날짜 선택</div></div><input type="date" class="date-custom" data-custom-input/><div class="date-bullet"></div></label>`;
+    const skelDate = `
+      <div class="date-opt is-skeleton">
+        <div class="date-body sk-meta">
+          <div class="sk-line w50 skel-bar"></div>
+          <div class="sk-line w70 skel-bar"></div>
+        </div>
+        <div class="sk-tag skel-bar"></div>
+      </div>`;
     card.innerHTML = `
       <div class="uc-head"><span class="uc-step">Step 3 / 4</span><span class="uc-title">타겟 날짜</span></div>
       <div class="uc-section" style="margin-top:8px">
         <div class="uc-section-label">메모리에서 찾았어요</div>
-        <div class="date-list">${mem.map((o,i)=>optHTML(o, i===0)).join('')}${customHTML}</div>
+        <div class="date-list" data-fill="dates">${skelDate}${skelDate}${skelDate}</div>
       </div>
-      <button class="uc-confirm" data-confirm="3">다음</button>
+      <button class="uc-confirm" data-confirm="3" disabled>다음</button>
     `;
     appendNode(card);
-    const customInput = card.querySelector('[data-custom-input]');
-    const selectOpt = (opt) => {
-      card.querySelectorAll('.date-opt').forEach(o => o.classList.remove('selected'));
-      opt.classList.add('selected');
-      opt.querySelector('input[type="radio"]').checked = true;
-    };
-    card.querySelectorAll('.date-opt').forEach(opt => {
-      opt.addEventListener('click', (e) => {
-        if (e.target.closest('[data-custom-input]')) return;   // 날짜 입력 클릭은 선택 토글 안 함
-        e.preventDefault();
-        selectOpt(opt);
-        if (opt.dataset.key === 'custom') customInput.showPicker?.();
-      });
-    });
-    customInput.addEventListener('change', () => selectOpt(card.querySelector('.date-opt-custom')));
     card.querySelector('[data-confirm="3"]').addEventListener('click', () => onStep3Confirm(card));
+    // 0.9s 후 메모리 이벤트로 채워짐
+    setTimeout(() => {
+      const list = card.querySelector('[data-fill="dates"]');
+      if (!list) return;
+      list.innerHTML = `${mem.map((o,i)=>optHTML(o, i===0)).join('')}${customHTML}`;
+      list.querySelectorAll('.date-opt').forEach((opt, idx) => {
+        opt.classList.add('reveal');
+        opt.style.animationDelay = (idx * 0.1) + 's';
+      });
+      const customInput = card.querySelector('[data-custom-input]');
+      const selectOpt = (opt) => {
+        card.querySelectorAll('.date-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input[type="radio"]').checked = true;
+      };
+      card.querySelectorAll('.date-opt').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          if (e.target.closest('[data-custom-input]')) return;
+          e.preventDefault();
+          selectOpt(opt);
+          if (opt.dataset.key === 'custom') customInput.showPicker?.();
+        });
+      });
+      customInput.addEventListener('change', () => selectOpt(card.querySelector('.date-opt-custom')));
+      card.querySelector('[data-confirm="3"]').disabled = false;
+    }, 900);
   }
   function onStep3Confirm(card) {
     const sel = card.querySelector('.date-opt.selected');
@@ -2069,38 +2090,59 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const card = document.createElement('div');
     card.className = 'ui-card';
     const p = computePlan();
-    const bn = '<span class="cat-bottleneck">병목</span>';
     const pos1 = (p.mid1 / p.days * 100).toFixed(1), pos2 = (p.mid2 / p.days * 100).toFixed(1);
+    // 1) 스켈레톤 먼저 렌더 — 외곽/divider/cats 영역만 placeholder로
     card.innerHTML = `
       <div class="uc-head"><span class="uc-step">Step 4 / 4</span><span class="uc-title">플랜 시안</span></div>
-      <div class="plan-hero">
-        <div class="plan-eyebrow">${SOLUTION_PLAN_NAMES[flow.solutionKind] || '체중감량'} 플랜</div>
-        <div class="plan-title">${p.totalLoss}kg 가벼워지기</div>
-        <div class="plan-summary">기간 <strong>${p.days}일</strong> · 체지방 <strong>${p.fat}% → ${p.goalFat}%</strong> · 일일 적자 <strong>${p.dailyDeficit}kcal</strong></div>
-      </div>
-      <div class="plan-divider"></div>
-      <div class="plan-cats">
-        <div class="plan-cat"><div class="pc-name">잘 태우기</div><div class="pc-val">${p.stepTarget.toLocaleString()}보</div></div>
-        <div class="plan-cat"><div class="pc-name">잘 자기</div><div class="pc-val">${p.sleepHTarget}시간</div></div>
-        <div class="plan-cat"><div class="pc-name">잘 빠지기</div><div class="pc-val">주 -${p.weeklyLoss}kg</div></div>
-        <div class="plan-cat"><div class="pc-name">잘 버티기</div><div class="pc-val">스트레스 ${p.stressMax}↓</div></div>
-      </div>
-      <div class="plan-checkpoint">
-        <div class="timeline">
-          <div class="tl-line"></div>
-          <div class="tl-node tl-start"><span class="tl-dot"></span><span class="tl-day">D-${p.days}</span><span class="tl-label">오늘</span></div>
-          <div class="tl-node" style="left: ${pos1}%"><span class="tl-dot tl-dot-mile"></span><span class="tl-day">D-${p.days-p.mid1}</span><span class="tl-label">중간점검</span></div>
-          <div class="tl-node" style="left: ${pos2}%"><span class="tl-dot tl-dot-mile"></span><span class="tl-day">D-${p.days-p.mid2}</span><span class="tl-label">중간점검</span></div>
-          <div class="tl-node tl-end"><span class="tl-dot"></span><span class="tl-day">D-0</span><span class="tl-label">목표</span></div>
+      <div data-fill="plan">
+        <div class="plan-hero">
+          <div class="sk-line w50 skel-bar" style="height:11px;margin-bottom:10px"></div>
+          <div class="sk-line w70 skel-bar" style="height:22px;margin-bottom:10px"></div>
+          <div class="sk-line w70 skel-bar" style="height:11px"></div>
         </div>
-      </div>
-      <div class="plan-actions">
-        <button class="uc-confirm" data-confirm="4">이 플랜으로 시작</button>
-        <div class="plan-secondary"><button class="btn-ghost">↑ 목표 올리기</button><button class="btn-ghost">↓ 목표 낮추기</button></div>
+        <div class="plan-divider"></div>
+        <div class="plan-cats">
+          <div class="plan-cat"><div class="sk-line w70 skel-bar" style="height:9px;margin-bottom:8px"></div><div class="sk-line w50 skel-bar" style="height:14px"></div></div>
+          <div class="plan-cat"><div class="sk-line w70 skel-bar" style="height:9px;margin-bottom:8px"></div><div class="sk-line w50 skel-bar" style="height:14px"></div></div>
+          <div class="plan-cat"><div class="sk-line w70 skel-bar" style="height:9px;margin-bottom:8px"></div><div class="sk-line w50 skel-bar" style="height:14px"></div></div>
+          <div class="plan-cat"><div class="sk-line w70 skel-bar" style="height:9px;margin-bottom:8px"></div><div class="sk-line w50 skel-bar" style="height:14px"></div></div>
+        </div>
       </div>
     `;
     appendNode(card);
-    card.querySelector('[data-confirm="4"]').addEventListener('click', () => onStep4Confirm(card));
+    // 2) 1.2s 후 실제 플랜 데이터로 교체 (역산된 수치 + 타임라인 + 액션 버튼)
+    setTimeout(() => {
+      const fill = card.querySelector('[data-fill="plan"]');
+      if (!fill) return;
+      fill.innerHTML = `
+        <div class="plan-hero reveal">
+          <div class="plan-eyebrow">${SOLUTION_PLAN_NAMES[flow.solutionKind] || '체중감량'} 플랜</div>
+          <div class="plan-title">${p.totalLoss}kg 가벼워지기</div>
+          <div class="plan-summary">기간 <strong>${p.days}일</strong> · 체지방 <strong>${p.fat}% → ${p.goalFat}%</strong> · 일일 적자 <strong>${p.dailyDeficit}kcal</strong></div>
+        </div>
+        <div class="plan-divider"></div>
+        <div class="plan-cats reveal" style="animation-delay:.1s">
+          <div class="plan-cat"><div class="pc-name">잘 태우기</div><div class="pc-val">${p.stepTarget.toLocaleString()}보</div></div>
+          <div class="plan-cat"><div class="pc-name">잘 자기</div><div class="pc-val">${p.sleepHTarget}시간</div></div>
+          <div class="plan-cat"><div class="pc-name">잘 빠지기</div><div class="pc-val">주 -${p.weeklyLoss}kg</div></div>
+          <div class="plan-cat"><div class="pc-name">잘 버티기</div><div class="pc-val">스트레스 ${p.stressMax}↓</div></div>
+        </div>
+        <div class="plan-checkpoint reveal" style="animation-delay:.2s">
+          <div class="timeline">
+            <div class="tl-line"></div>
+            <div class="tl-node tl-start"><span class="tl-dot"></span><span class="tl-day">D-${p.days}</span><span class="tl-label">오늘</span></div>
+            <div class="tl-node" style="left: ${pos1}%"><span class="tl-dot tl-dot-mile"></span><span class="tl-day">D-${p.days-p.mid1}</span><span class="tl-label">중간점검</span></div>
+            <div class="tl-node" style="left: ${pos2}%"><span class="tl-dot tl-dot-mile"></span><span class="tl-day">D-${p.days-p.mid2}</span><span class="tl-label">중간점검</span></div>
+            <div class="tl-node tl-end"><span class="tl-dot"></span><span class="tl-day">D-0</span><span class="tl-label">목표</span></div>
+          </div>
+        </div>
+        <div class="plan-actions reveal" style="animation-delay:.3s">
+          <button class="uc-confirm" data-confirm="4">이 플랜으로 시작</button>
+          <div class="plan-secondary"><button class="btn-ghost">↑ 목표 올리기</button><button class="btn-ghost">↓ 목표 낮추기</button></div>
+        </div>
+      `;
+      card.querySelector('[data-confirm="4"]').addEventListener('click', () => onStep4Confirm(card));
+    }, 1200);
   }
   function onStep4Confirm(card) {
     card.querySelector('[data-confirm="4"]').disabled = true;
