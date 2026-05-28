@@ -680,7 +680,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .composer {
     position: absolute;
     left: 12px; right: 12px;
-    bottom: 12px;
+    bottom: calc(12px + var(--nav-bar-h));
     height: 48px;
     z-index: 28;
     display: flex;
