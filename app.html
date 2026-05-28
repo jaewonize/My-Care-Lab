@@ -1558,10 +1558,42 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     flow.solutionName = null;
     appendAgent(
       '<p>안녕하세요, 소연님 🌱</p>'
-      + '<p>최근 두 달, 운동복·요가매트 찜이 늘었고 다이어트 루틴 캡처도 갤러리에 12장 정도 쌓였어요. '
-      + '시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>'
+      + '<p>최근 두 달 데이터에서 이런 흔적이 보였어요.</p>'
+    );
+    appendIntroSignals();
+    appendAgent(
+      '<p>시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>'
     );
     appendQuickReplies();
+  }
+  function appendIntroSignals() {
+    const card = document.createElement('div');
+    card.className = 'ui-card';
+    card.innerHTML = `
+      <div class="uc-head">
+        <span class="uc-step">발견</span>
+        <span class="uc-title">소연님의 최근 두 달</span>
+      </div>
+      <div class="connect-list">
+        <div class="connect-row">
+          <div class="connect-ico">🛒</div>
+          <div class="connect-meta">
+            <b>운동복·요가매트 찜</b>
+            <span>쇼핑 위시리스트 5건 추가</span>
+          </div>
+          <span class="connect-tag">60일</span>
+        </div>
+        <div class="connect-row">
+          <div class="connect-ico">📷</div>
+          <div class="connect-meta">
+            <b>다이어트 식단·루틴 캡처</b>
+            <span>갤러리 스크린샷 12장</span>
+          </div>
+          <span class="connect-tag">60일</span>
+        </div>
+      </div>
+    `;
+    appendNode(card);
   }
   const SOLUTION_LABELS = {
     body: '🏃 내 몸 가꾸기 루틴',
