@@ -575,7 +575,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     position: absolute;
     top: 88px;
     left: 0; right: 0;
-    bottom: 76px;
+    bottom: calc(76px + var(--nav-bar-h));
     overflow-y: auto;
     overflow-x: hidden;
     padding: 16px 18px 24px;
