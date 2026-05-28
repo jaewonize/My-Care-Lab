@@ -649,6 +649,43 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   .bubble p { margin: 0; }
   .bubble p + p { margin-top: 6px; }
 
+  /* Typing indicator (••• in agent bubble) */
+  .msg.agent.typing .bubble {
+    display: inline-flex; align-items: center;
+    padding: 12px 16px;
+  }
+  .typing-dots { display: inline-flex; gap: 5px; align-items: center; }
+  .typing-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #8a9aa1;
+    animation: tdot 1.2s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.30s; }
+  @keyframes tdot {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30%           { opacity: 1.0; transform: translateY(-3px); }
+  }
+
+  /* Agent status label — '일상 데이터 탐색 중…' 작업 상태 */
+  .agent-status {
+    display: flex; align-items: center; gap: 8px;
+    margin: 4px 0 4px 38px;       /* avatar 폭만큼 들여쓰기로 agent 메시지와 정렬 */
+    padding: 6px 0;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11.5px; color: var(--ink-3); letter-spacing: -.1px;
+    opacity: 0; animation: statusFadeIn .25s ease forwards;
+  }
+  .agent-status .spinner {
+    width: 12px; height: 12px; flex: 0 0 12px;
+    border: 1.5px solid rgba(20,60,70,.15);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin .9s linear infinite;
+  }
+  @keyframes spin       { to { transform: rotate(360deg); } }
+  @keyframes statusFadeIn { to { opacity: 1; } }
+
   /* Quick reply chips */
   .quick-replies { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 2px; }
   .chip {
@@ -1508,6 +1545,32 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     chatEl.appendChild(w); _scrollAnchor = w; scrollChat();
   }
   function appendNode(node) { chatEl.appendChild(node); scrollChat(); }
+  // 타이핑 인디케이터(•••) — 에이전트 메시지 직전 표시 후 제거
+  function appendTyping() {
+    const w = document.createElement('div');
+    w.className = 'msg agent typing';
+    w.innerHTML = `<div class="agent-avatar"></div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+    chatEl.appendChild(w); scrollChat();
+    return w;
+  }
+  // 작업 상태 라벨 — '데이터 탐색 중…' 등 에이전트의 능동적 작업 표시
+  function appendStatus(text) {
+    const w = document.createElement('div');
+    w.className = 'agent-status';
+    w.innerHTML = `<div class="spinner"></div><span>${text}</span>`;
+    chatEl.appendChild(w); scrollChat();
+    return w;
+  }
+  // 타이핑 → after() 헬퍼 (보통 0.6~0.8s)
+  function withTyping(after, delay) {
+    const t = appendTyping();
+    setTimeout(() => { t.remove(); after(); }, delay || 700);
+  }
+  // 상태 라벨 → after() 헬퍼 (작업 시간을 좀 길게: 1.0~1.4s)
+  function withStatus(text, after, delay) {
+    const s = appendStatus(text);
+    setTimeout(() => { s.remove(); after(); }, delay || 1200);
+  }
   // 사용자 입력을 상단에 고정하고, 에이전트 답변/위젯이 그 아래로 순차로 보이게 (맨 아래 점프 금지)
   function scrollChat() {
     requestAnimationFrame(() => {
@@ -1581,23 +1644,26 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     qrEl.remove();
     appendUser(label);
     const showSuggestFlow = () => {
-      appendAgent('<p>최근 두 달, 일상 데이터에서 이런 흔적을 발견했어요.</p>');
-      setTimeout(() => {
-        appendIntroSignals();
-        setTimeout(() => {
-          appendAgent('<p>의지는 있는데 실천이 어려운가요? 어디부터 시작할지 함께 정해봐요.</p>');
-          setTimeout(() => { appendQuickReplies(); }, 500);
-        }, 1100);
-      }, 700);
+      // 타이핑 → 도입 발화 → 상태 라벨('데이터 탐색 중…') → 신호 카드 → 타이핑 → CTA → 버튼
+      withTyping(() => {
+        appendAgent('<p>최근 두 달, 일상 데이터에서 이런 흔적을 발견했어요.</p>');
+        withStatus('일상 데이터 탐색 중…', () => {
+          appendIntroSignals();
+          withTyping(() => {
+            appendAgent('<p>의지는 있는데 실천이 어려운가요? 어디부터 시작할지 함께 정해봐요.</p>');
+            setTimeout(() => { appendQuickReplies(); }, 500);
+          });
+        }, 1400);
+      });
     };
     if (kind === 'suggest') {
-      setTimeout(showSuggestFlow, 350);
+      setTimeout(showSuggestFlow, 250);
     } else {
       // 'specific' — 이번 데모에선 추천 흐름만 시연. 안내 후 합류.
-      setTimeout(() => {
+      withTyping(() => {
         appendAgent('<p>이번 데모에서는 <strong>추천 흐름</strong>으로만 시연돼요. 한번 같이 보실래요?</p>');
         setTimeout(showSuggestFlow, 700);
-      }, 350);
+      });
     }
   }
   function appendIntroSignals() {
@@ -1652,10 +1718,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     appendUser(label);
     flow.solutionKind = kind;
     flow.solutionName = SOLUTION_LABELS[kind] || SOLUTION_LABELS.body;
-    setTimeout(() => {
+    // 타이핑 → 수락 발화 → 상태 라벨('갤러리·웨어러블 분석 중…') → Step 1 카드
+    withTyping(() => {
       appendAgent('<p>좋아요. 현재 상태부터 같이 살펴볼게요.</p>');
-      setTimeout(() => { appendStep1(); }, 350);
-    }, 350);
+      withStatus('갤러리·웨어러블 데이터 분석 중…', () => { appendStep1(); }, 1400);
+    });
   }
   function appendStep1() {
     const card = document.createElement('div');
@@ -1698,10 +1765,10 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const c = bodyComp(flow.weight, flow.fatPct, flow.gender);
     flow.muscle = c.muscle; flow.lean = c.lean; flow.fatMass = c.fatMass;
     appendUser('연동 승인');
-    setTimeout(() => {
+    withTyping(() => {
       appendAgent('<p>데이터를 연결했어요. 이제 <strong>목표 체형</strong>을 함께 정해요.</p>');
-      appendStep2();
-    }, 350);
+      setTimeout(() => { appendStep2(); }, 400);
+    });
   }
   function appendStep2() {
     const card = document.createElement('div');
@@ -1861,10 +1928,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   function onStep2Confirm(card, weight) {
     card.querySelector('[data-confirm="2"]').disabled = true;
     appendUser(`이 목표로 확정 (▸ ${weight}kg)`);
-    setTimeout(() => {
-      appendAgent('<p>좋아요. 언제까지 달성하고 싶으세요?</p><p>메모리에서 다가오는 이벤트를 찾아봤어요.</p>');
-      appendStep3();
-    }, 350);
+    // 타이핑 → 발화 → 상태 라벨('메모리 조회 중…') → Step 3 카드
+    withTyping(() => {
+      appendAgent('<p>좋아요. 언제까지 달성하고 싶으세요?</p>');
+      withStatus('캘린더 메모리 조회 중…', () => { appendStep3(); }, 1400);
+    });
   }
   function appendStep3() {
     const card = document.createElement('div');
@@ -1918,10 +1986,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     flow.targetDays = days;
     flow.targetTitle = title;
     appendUser(`▸ ${title} (D-${days})`);
-    setTimeout(() => {
-      appendAgent('<p>데이터를 분석해서 플랜을 만들었어요.</p><p>시안을 확인해보세요.</p>');
-      appendStep4();
-    }, 350);
+    // 타이핑 → 발화 → 상태 라벨('플랜 설계 중…') → Step 4 카드
+    withTyping(() => {
+      appendAgent('<p>데이터를 분석해서 플랜을 만들고 있어요.</p>');
+      withStatus('플랜 설계 중…', () => { appendStep4(); }, 1600);
+    });
   }
   // 플랜 역산: 1kg≈7700kcal, 현재 활동/수면/스트레스로 카테고리 목표·병목 판정
   function computePlan() {
