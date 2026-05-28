@@ -686,6 +686,24 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   @keyframes spin       { to { transform: rotate(360deg); } }
   @keyframes statusFadeIn { to { opacity: 1; } }
 
+  /* 카드 스켈레톤 → 실제 데이터로 채워짐 (데이터 발견 시각 효과) */
+  .skel-bar {
+    background: linear-gradient(90deg, rgba(20,60,70,.06) 25%, rgba(20,60,70,.14) 50%, rgba(20,60,70,.06) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.3s infinite linear;
+    border-radius: 6px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .connect-row.is-skeleton .sk-ico  { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 9px; }
+  .connect-row.is-skeleton .sk-meta { flex: 1 1 auto; display: flex; flex-direction: column; gap: 7px; }
+  .connect-row.is-skeleton .sk-line { height: 9px; }
+  .connect-row.is-skeleton .sk-line.w70 { width: 70%; }
+  .connect-row.is-skeleton .sk-line.w50 { width: 50%; }
+  .connect-row.is-skeleton .sk-tag  { width: 36px; height: 18px; border-radius: 999px; }
+  /* 채워질 때 row 페이드인 */
+  .connect-row.reveal { animation: rowFadeIn .35s ease forwards; }
+  @keyframes rowFadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
   /* Quick reply chips */
   .quick-replies { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; margin-top: 2px; }
   .chip {
@@ -1669,13 +1687,32 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   function appendIntroSignals() {
     const card = document.createElement('div');
     card.className = 'ui-card';
+    const skelRow = `
+      <div class="connect-row is-skeleton">
+        <div class="sk-ico skel-bar"></div>
+        <div class="sk-meta">
+          <div class="sk-line w70 skel-bar"></div>
+          <div class="sk-line w50 skel-bar"></div>
+        </div>
+        <div class="sk-tag skel-bar"></div>
+      </div>`;
     card.innerHTML = `
       <div class="uc-head">
         <span class="uc-step">발견</span>
         <span class="uc-title">소연님의 최근 두 달</span>
       </div>
-      <div class="connect-list">
-        <div class="connect-row">
+      <div class="connect-list" data-fill="signals">
+        ${skelRow}
+        ${skelRow}
+      </div>
+    `;
+    appendNode(card);
+    // 0.9s 후 실제 데이터로 채워짐
+    setTimeout(() => {
+      const list = card.querySelector('[data-fill="signals"]');
+      if (!list) return;
+      list.innerHTML = `
+        <div class="connect-row reveal">
           <div class="connect-ico">🛒</div>
           <div class="connect-meta">
             <b>운동복·요가매트 찜</b>
@@ -1683,7 +1720,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
           </div>
           <span class="connect-tag">60일</span>
         </div>
-        <div class="connect-row">
+        <div class="connect-row reveal" style="animation-delay:.15s">
           <div class="connect-ico">📷</div>
           <div class="connect-meta">
             <b>다이어트 식단·루틴 캡처</b>
@@ -1691,9 +1728,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
           </div>
           <span class="connect-tag">60일</span>
         </div>
-      </div>
-    `;
-    appendNode(card);
+      `;
+    }, 900);
   }
   const SOLUTION_LABELS = {
     body: '🏃 내 몸 가꾸기 루틴',
@@ -1727,6 +1763,15 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   function appendStep1() {
     const card = document.createElement('div');
     card.className = 'ui-card';
+    const skelRow = `
+      <div class="connect-row is-skeleton">
+        <div class="sk-ico skel-bar"></div>
+        <div class="sk-meta">
+          <div class="sk-line w70 skel-bar"></div>
+          <div class="sk-line w50 skel-bar"></div>
+        </div>
+        <div class="sk-tag skel-bar"></div>
+      </div>`;
     card.innerHTML = `
       <div class="uc-head"><span class="uc-step">Step 1 / 4</span><span class="uc-title">현재 상태 파악</span></div>
       <div class="found-photo">
@@ -1738,21 +1783,30 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
         <span class="fp-check">✓</span>
       </div>
       <div class="uc-section-label" style="margin-top:16px">연동할 데이터</div>
-      <div class="connect-list">
-        <div class="connect-row">
-          <span class="connect-ico">⌚</span>
-          <div class="connect-meta"><b>Galaxy Watch</b><span>걸음수 4,200보 · 수면 5.5h · 스트레스 72</span></div>
-          <span class="connect-tag">연동</span>
-        </div>
-        <div class="connect-row">
-          <span class="connect-ico">📊</span>
-          <div class="connect-meta"><b>삼성 헬스</b><span>체중 65kg · 체지방률 32% · 168cm</span></div>
-          <span class="connect-tag">연동</span>
-        </div>
+      <div class="connect-list" data-fill="step1">
+        ${skelRow}
+        ${skelRow}
       </div>
       <button class="uc-confirm" data-confirm="1">연동 승인하고 계속</button>
     `;
     appendNode(card);
+    // 0.9s 후 실제 연동 데이터로 채워짐
+    setTimeout(() => {
+      const list = card.querySelector('[data-fill="step1"]');
+      if (!list) return;
+      list.innerHTML = `
+        <div class="connect-row reveal">
+          <span class="connect-ico">⌚</span>
+          <div class="connect-meta"><b>Galaxy Watch</b><span>걸음수 4,200보 · 수면 5.5h · 스트레스 72</span></div>
+          <span class="connect-tag">연동</span>
+        </div>
+        <div class="connect-row reveal" style="animation-delay:.15s">
+          <span class="connect-ico">📊</span>
+          <div class="connect-meta"><b>삼성 헬스</b><span>체중 65kg · 체지방률 32% · 168cm</span></div>
+          <span class="connect-tag">연동</span>
+        </div>
+      `;
+    }, 900);
     card.querySelector('[data-confirm="1"]').addEventListener('click', () => onStep1Confirm(card));
   }
   function onStep1Confirm(card) {
