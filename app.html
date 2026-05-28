@@ -1525,19 +1525,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const text = composerInput.value.trim();
     if (!text) return;
     appendUser(text); composerInput.value = '';
-    // '원하는 솔루션이 있어요' 분기 — 사용자 자유 입력 후 데모 시나리오로 합류
-    if (flow.awaitingCustomNeed) {
-      flow.awaitingCustomNeed = false;
-      flow.solutionKind = 'body';
-      flow.solutionName = SOLUTION_LABELS.body;
-      setTimeout(() => {
-        appendAgent('<p>좋아요. 이번 데모에서는 <strong>체중감량 시나리오</strong>로 흐름을 시연해 볼게요.</p>');
-        setTimeout(() => {
-          appendAgent('<p>현재 상태부터 같이 살펴볼게요.</p>');
-          setTimeout(() => { appendStep1(); }, 400);
-        }, 600);
-      }, 350);
-    }
   }
   composerSend.addEventListener('click', sendComposer);
   composerInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendComposer(); });
@@ -1570,7 +1557,6 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     chatEl.innerHTML = '';
     flow.solutionName = null;
     flow.solutionKind = null;
-    flow.awaitingCustomNeed = false;
     // Stage A: 인사 + 역할 → 시작 방식 선택
     appendAgent(
       '<p>안녕하세요, 소연님 🌱</p>'
@@ -1578,7 +1564,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     );
     setTimeout(() => { appendIntroChoices(); }, 600);
   }
-  // Stage A 분기 버튼
+  // Stage A 분기 버튼 ('원하는 솔루션이 있어요'는 데모 미시연 — 안내 후 추천 흐름으로 합류)
   function appendIntroChoices() {
     const div = document.createElement('div');
     div.className = 'quick-replies';
@@ -1594,24 +1580,23 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   function onIntroChoice(kind, label, qrEl) {
     qrEl.remove();
     appendUser(label);
-    if (kind === 'suggest') {
-      // Stage B: 추천 받고 싶어요 → 발견된 신호 → 솔루션 2갈래
+    const showSuggestFlow = () => {
+      appendAgent('<p>최근 두 달 데이터에서 이런 흔적이 보였어요.</p>');
       setTimeout(() => {
-        appendAgent('<p>최근 두 달 데이터에서 이런 흔적이 보였어요.</p>');
+        appendIntroSignals();
         setTimeout(() => {
-          appendIntroSignals();
-          setTimeout(() => {
-            appendAgent('<p>시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>');
-            setTimeout(() => { appendQuickReplies(); }, 500);
-          }, 1100);
-        }, 700);
-      }, 350);
+          appendAgent('<p>시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>');
+          setTimeout(() => { appendQuickReplies(); }, 500);
+        }, 1100);
+      }, 700);
+    };
+    if (kind === 'suggest') {
+      setTimeout(showSuggestFlow, 350);
     } else {
-      // Stage B': 원하는 솔루션이 있어요 → 자유 입력 대기
+      // 'specific' — 이번 데모에선 추천 흐름만 시연. 안내 후 합류.
       setTimeout(() => {
-        appendAgent('<p>어떤 솔루션을 만들고 싶으신지 편하게 말씀해 주세요.</p>');
-        flow.awaitingCustomNeed = true;
-        try { composerInput.focus(); } catch (e) {}
+        appendAgent('<p>이번 데모에서는 <strong>추천 흐름</strong>으로만 시연돼요. 한번 같이 보실래요?</p>');
+        setTimeout(showSuggestFlow, 700);
       }, 350);
     }
   }
