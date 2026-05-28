@@ -761,8 +761,8 @@ const CAM_DIST = 120;
 const look = new THREE.Vector3(-2.615, 1.257, 1.658);
 const INIT_LOOK = look.clone();
 const INIT_ZOOM = camera.zoom;
-const VIEW_SHIFT_X = -30;   // 렌즈 시프트 X (− = 보드 우측으로 평행이동)
-const VIEW_SHIFT_Y = 110;   // 렌즈 시프트 Y (+ = 보드 위쪽으로 평행이동)
+const VIEW_SHIFT_X = -10;   // 렌즈 시프트 X (− = 보드 우측으로 평행이동)
+const VIEW_SHIFT_Y = 125;   // 렌즈 시프트 Y (+ = 보드 위쪽으로 평행이동)
 const _lookM = new THREE.Matrix4(), _UP = new THREE.Vector3(0, 1, 0);
 function quatLookingAt(pos, target) {
   _lookM.lookAt(pos, target, _UP);
