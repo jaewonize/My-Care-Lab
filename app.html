@@ -694,12 +694,13 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     border-radius: 6px;
   }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  .connect-row.is-skeleton .sk-ico  { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 9px; }
-  .connect-row.is-skeleton .sk-meta { flex: 1 1 auto; display: flex; flex-direction: column; gap: 7px; }
-  .connect-row.is-skeleton .sk-line { height: 9px; }
-  .connect-row.is-skeleton .sk-line.w70 { width: 70%; }
-  .connect-row.is-skeleton .sk-line.w50 { width: 50%; }
-  .connect-row.is-skeleton .sk-tag  { width: 36px; height: 18px; border-radius: 999px; }
+  /* skeleton 자식 클래스 — connect-row / date-opt 등에서 공통 사용 */
+  .sk-ico  { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 9px; }
+  .sk-meta { flex: 1 1 auto; display: flex; flex-direction: column; gap: 7px; }
+  .sk-line { height: 9px; }
+  .sk-line.w70 { width: 70%; }
+  .sk-line.w50 { width: 50%; }
+  .sk-tag  { width: 36px; height: 18px; border-radius: 999px; }
   /* 채워질 때 페이드인 (range: row / hero / cat 등 모두) */
   .reveal,
   .connect-row.reveal { animation: rowFadeIn .35s ease forwards; }
@@ -1666,15 +1667,18 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     qrEl.remove();
     appendUser(label);
     const showSuggestFlow = () => {
-      // 타이핑 → 도입 발화 → 상태 라벨('데이터 탐색 중…') → 신호 카드 → 타이핑 → CTA → 버튼
+      // 타이핑 → 도입 발화 → 상태 라벨('데이터 탐색 중…') → 신호 카드 → (스켈레톤 채워짐) → 타이핑 → CTA → 버튼
       withTyping(() => {
         appendAgent('<p>최근 두 달, 일상 데이터에서 이런 흔적을 발견했어요.</p>');
         withStatus('일상 데이터 탐색 중…', () => {
           appendIntroSignals();
-          withTyping(() => {
-            appendAgent('<p>의지는 있는데 실천이 어려운가요? 어디부터 시작할지 함께 정해봐요.</p>');
-            setTimeout(() => { appendQuickReplies(); }, 500);
-          });
+          // 스켈레톤 채워짐(0.9s) + 살짝 호흡(0.4s) 뒤에 다음 타이핑 시작
+          setTimeout(() => {
+            withTyping(() => {
+              appendAgent('<p>의지는 있는데 실천이 어려운가요? 어디부터 시작할지 함께 정해봐요.</p>');
+              setTimeout(() => { appendQuickReplies(); }, 500);
+            });
+          }, 1300);
         }, 1400);
       });
     };
@@ -2000,7 +2004,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const customHTML = `<label class="date-opt date-opt-custom" data-key="custom"><input type="radio" name="t"/><div class="date-body"><div class="date-title">직접 입력</div><div class="date-sub">원하는 목표 날짜 선택</div></div><input type="date" class="date-custom" data-custom-input/><div class="date-bullet"></div></label>`;
     const skelDate = `
       <div class="date-opt is-skeleton">
-        <div class="date-body sk-meta">
+        <div class="sk-meta">
           <div class="sk-line w50 skel-bar"></div>
           <div class="sk-line w70 skel-bar"></div>
         </div>
