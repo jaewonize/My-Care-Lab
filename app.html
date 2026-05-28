@@ -2222,16 +2222,17 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
      넘치는 좌우 가장자리는 body overflow:hidden으로 클립. 임베드(피치 슬라이드)에서는 미적용. */
   if (!document.documentElement.classList.contains('embed')) {
     const _ph = document.getElementById('phone');
-    // 뷰포트 정중앙에 고정 배치 (body가 폰 높이로 늘어나 중앙이 어긋나던 문제 방지)
+    // 너비 맞춤 + 좌상단 고정 + 상단 크롭.
+    // 너비(innerWidth) 기준이라 하단 시스템바 토글(높이 변화)에도 재스케일/이동이 없어 안 흔들림.
+    // 바가 떠도 콘텐츠는 그대로 있고 바만 위에 덮임 → 집어넣으면 그대로 복귀.
+    const CROP_TOP = 36;   // 상단 상태바 영역 잘라내기 (헤더 위 검정/빈 갭 생기면 이 값을 35·34…로 줄여 튜닝)
     _ph.style.position = 'fixed';
-    _ph.style.left = '50%';
-    _ph.style.top = '50%';
-    _ph.style.transformOrigin = 'center center';
+    _ph.style.left = '0';
+    _ph.style.top = '0';
+    _ph.style.transformOrigin = 'top left';
     const _fit = () => {
-      // contain(맞춤): 전체가 잘리지 않게 가로·세로 중 작은 비율로 맞춤.
-      // 남는 가장자리는 setBarColor가 화면 색으로 칠해 검정 바가 안 보이게 함.
-      const s = Math.min(window.innerWidth / 360, window.innerHeight / 780);
-      _ph.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+      const s = window.innerWidth / 360;
+      _ph.style.transform = 'translate(0px, ' + (-CROP_TOP * s) + 'px) scale(' + s + ')';
     };
     window.addEventListener('resize', _fit);
     _fit();
