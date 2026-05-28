@@ -1555,15 +1555,28 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   const numFrom = (s) => parseFloat(String(s).replace(/[^0-9.]/g, '')) || 0;
   function resetChat() {
     chatEl.innerHTML = '';
-    appendAgent('<p>안녕하세요, 소연님 🌱</p><p>어떤 솔루션을 함께 만들어볼까요?</p>');
+    flow.solutionName = null;
+    appendAgent(
+      '<p>안녕하세요, 소연님 🌱</p>'
+      + '<p>최근 두 달, 운동복·요가매트 찜이 늘었고 다이어트 루틴 캡처도 갤러리에 12장 정도 쌓였어요. '
+      + '시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>'
+    );
     appendQuickReplies();
   }
+  const SOLUTION_LABELS = {
+    body: '🏃 내 몸 가꾸기 루틴',
+    diet: '🥗 건강 식단 리셋',
+  };
+  const SOLUTION_PLAN_NAMES = {
+    body: '내 몸 가꾸기 루틴',
+    diet: '건강 식단 리셋',
+  };
   function appendQuickReplies() {
     const div = document.createElement('div');
     div.className = 'quick-replies';
     div.innerHTML = `
-      <button class="chip" data-reply="weight">체중감량 솔루션 만들어줘</button>
-      <button class="chip" data-reply="sleep">수면 개선하고 싶어</button>
+      <button class="chip" data-reply="body">${SOLUTION_LABELS.body}</button>
+      <button class="chip" data-reply="diet">${SOLUTION_LABELS.diet}</button>
     `;
     appendNode(div);
     div.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => onQuickReply(c.dataset.reply, c.textContent.trim(), div)));
@@ -1571,12 +1584,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   function onQuickReply(kind, label, qrEl) {
     qrEl.remove();
     appendUser(label);
+    flow.solutionKind = kind;
+    flow.solutionName = SOLUTION_LABELS[kind] || SOLUTION_LABELS.body;
     setTimeout(() => {
-      if (kind === 'sleep') appendAgent('<p>이번 데모에서는 <strong>체중감량 솔루션</strong>만 시연돼요.</p>');
-      setTimeout(() => {
-        appendAgent('<p>현재 상태부터 파악할게요. 갤러리와 건강 데이터를 살펴봤어요.</p>');
-        appendStep1();
-      }, kind === 'sleep' ? 450 : 100);
+      appendAgent('<p>좋아요. 현재 상태부터 같이 살펴볼게요.</p>');
+      setTimeout(() => { appendStep1(); }, 350);
     }, 350);
   }
   function appendStep1() {
@@ -1873,7 +1885,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     card.innerHTML = `
       <div class="uc-head"><span class="uc-step">Step 4 / 4</span><span class="uc-title">플랜 시안</span></div>
       <div class="plan-hero">
-        <div class="plan-eyebrow">체중감량 플랜</div>
+        <div class="plan-eyebrow">${SOLUTION_PLAN_NAMES[flow.solutionKind] || '체중감량'} 플랜</div>
         <div class="plan-title">${p.totalLoss}kg 가벼워지기</div>
         <div class="plan-summary">기간 <strong>${p.days}일</strong> · 체지방 <strong>${p.fat}% → ${p.goalFat}%</strong> · 일일 적자 <strong>${p.dailyDeficit}kcal</strong></div>
       </div>
