@@ -1525,6 +1525,19 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const text = composerInput.value.trim();
     if (!text) return;
     appendUser(text); composerInput.value = '';
+    // '원하는 솔루션이 있어요' 분기 — 사용자 자유 입력 후 데모 시나리오로 합류
+    if (flow.awaitingCustomNeed) {
+      flow.awaitingCustomNeed = false;
+      flow.solutionKind = 'body';
+      flow.solutionName = SOLUTION_LABELS.body;
+      setTimeout(() => {
+        appendAgent('<p>좋아요. 이번 데모에서는 <strong>체중감량 시나리오</strong>로 흐름을 시연해 볼게요.</p>');
+        setTimeout(() => {
+          appendAgent('<p>현재 상태부터 같이 살펴볼게요.</p>');
+          setTimeout(() => { appendStep1(); }, 400);
+        }, 600);
+      }, 350);
+    }
   }
   composerSend.addEventListener('click', sendComposer);
   composerInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendComposer(); });
@@ -1556,23 +1569,51 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   function resetChat() {
     chatEl.innerHTML = '';
     flow.solutionName = null;
-    // 단계 1: 인사 + 도입 한 문장
+    flow.solutionKind = null;
+    flow.awaitingCustomNeed = false;
+    // Stage A: 인사 + 역할 → 시작 방식 선택
     appendAgent(
       '<p>안녕하세요, 소연님 🌱</p>'
-      + '<p>최근 두 달 데이터에서 이런 흔적이 보였어요.</p>'
+      + '<p>일상 데이터를 보면서 같이 건강 솔루션을 만들어드려요. 어떻게 시작해 볼까요?</p>'
     );
-    // 단계 2 (800ms): 발견된 신호 카드
-    setTimeout(() => {
-      appendIntroSignals();
-      // 단계 3 (1100ms): CTA 텍스트
+    setTimeout(() => { appendIntroChoices(); }, 600);
+  }
+  // Stage A 분기 버튼
+  function appendIntroChoices() {
+    const div = document.createElement('div');
+    div.className = 'quick-replies';
+    div.innerHTML = `
+      <button class="chip" data-intro="specific">원하는 솔루션이 있어요</button>
+      <button class="chip" data-intro="suggest">추천 받고 싶어요</button>
+    `;
+    appendNode(div);
+    div.querySelectorAll('.chip').forEach(c =>
+      c.addEventListener('click', () => onIntroChoice(c.dataset.intro, c.textContent.trim(), div))
+    );
+  }
+  function onIntroChoice(kind, label, qrEl) {
+    qrEl.remove();
+    appendUser(label);
+    if (kind === 'suggest') {
+      // Stage B: 추천 받고 싶어요 → 발견된 신호 → 솔루션 2갈래
       setTimeout(() => {
-        appendAgent(
-          '<p>시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>'
-        );
-        // 단계 4 (500ms): 선택지 버튼
-        setTimeout(() => { appendQuickReplies(); }, 500);
-      }, 1100);
-    }, 800);
+        appendAgent('<p>최근 두 달 데이터에서 이런 흔적이 보였어요.</p>');
+        setTimeout(() => {
+          appendIntroSignals();
+          setTimeout(() => {
+            appendAgent('<p>시작할 마음은 있으셨던 것 같은데, 어디부터 갈지 같이 정해볼까요?</p>');
+            setTimeout(() => { appendQuickReplies(); }, 500);
+          }, 1100);
+        }, 700);
+      }, 350);
+    } else {
+      // Stage B': 원하는 솔루션이 있어요 → 자유 입력 대기
+      setTimeout(() => {
+        appendAgent('<p>어떤 솔루션을 만들고 싶으신지 편하게 말씀해 주세요.</p>');
+        flow.awaitingCustomNeed = true;
+        try { composerInput.focus(); } catch (e) {}
+      }, 350);
+    }
   }
   function appendIntroSignals() {
     const card = document.createElement('div');
