@@ -755,12 +755,14 @@ const FRUST = 56;                                    // zoom=1에서 보이는 �
 const camera = new THREE.OrthographicCamera(
   -FRUST * ASPECT / 2, FRUST * ASPECT / 2, FRUST / 2, -FRUST / 2, -200, 400
 );
-camera.zoom = 1.8221;
+camera.zoom = 1.70;                                       // 살짝 줌아웃 (이전 1.8221)
 const VIEW_DIR = new THREE.Vector3(1, 1, 1).normalize();   // 정아이소 (35.26°)
 const CAM_DIST = 120;
 const look = new THREE.Vector3(-2.615, 1.257, 1.658);
 const INIT_LOOK = look.clone();
 const INIT_ZOOM = camera.zoom;
+const VIEW_SHIFT_X = -30;   // 렌즈 시프트 X (− = 보드 우측으로 평행이동)
+const VIEW_SHIFT_Y = 110;   // 렌즈 시프트 Y (+ = 보드 위쪽으로 평행이동)
 const _lookM = new THREE.Matrix4(), _UP = new THREE.Vector3(0, 1, 0);
 function quatLookingAt(pos, target) {
   _lookM.lookAt(pos, target, _UP);
@@ -772,8 +774,8 @@ function applyCam() {
   camera.updateProjectionMatrix();
 }
 applyCam();
-// 하단 점수 카드(268px) 위로 보드를 끌어올리는 렌즈 시프트.
-camera.setViewOffset(W, H, 0, 110, W, H);
+// 하단 점수 카드(268px) 위로 보드를 끌어올리고 우측으로 살짝 미는 렌즈 시프트.
+camera.setViewOffset(W, H, VIEW_SHIFT_X, VIEW_SHIFT_Y, W, H);
 
 // ─── 입력: 드래그 평행이동 · 휠/핀치 줌 (회전 없음) ───
 const pointers = new Map();
