@@ -1569,8 +1569,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const div = document.createElement('div');
     div.className = 'quick-replies';
     div.innerHTML = `
-      <button class="chip" data-intro="specific">원하는 솔루션이 있어요</button>
       <button class="chip" data-intro="suggest">추천 받고 싶어요</button>
+      <button class="chip" data-intro="specific">원하는 솔루션이 있어요</button>
     `;
     appendNode(div);
     div.querySelectorAll('.chip').forEach(c =>
