@@ -21,6 +21,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
   :root {
+    --nav-bar-h:    40px;   /* 모바일 시스템(내비) 바 높이만큼 하단 UI를 위로 올림 (시스템바 표시 시 가려지지 않게) */
     --bg:           #e8eff1;
     --card:         #ffffff;
     --primary:      #1aa6c2;
@@ -70,7 +71,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   /* 시연자용 갤러리 리셋 — 1×2 점수 카드 위, 우측 정렬. 기호만(눈에 안 띄게).
      Slow Museum 테마에서만 노출 (planet·marble은 아직 보상 초기화 대상 아님). */
   .gallery-reset {
-    position: absolute; right: 16px; bottom: 296px; z-index: 6;
+    position: absolute; right: 16px; bottom: calc(296px + var(--nav-bar-h)); z-index: 6;
     width: 24px; height: 24px; border-radius: 50%;
     display: none; place-items: center;
     background: rgba(255,255,255,.32);
@@ -500,7 +501,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   /* Tab bar */
   .tabbar {
     position: absolute;
-    bottom: 0; left: 0; right: 0;
+    bottom: var(--nav-bar-h); left: 0; right: 0;
     height: 56px;
     z-index: 25;
     background: transparent;
@@ -1254,7 +1255,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   /* 점수 카드 — glassmorphism (솔루션 탭 .list 글래스와 동일 스펙: blur22·saturate1.5·엣지·그림자,
      채움색만 각 테마 배경색으로) */
   .score-cards {
-    position: absolute; left: 16px; right: 16px; bottom: 70px; z-index: 5;
+    position: absolute; left: 16px; right: 16px; bottom: calc(70px + var(--nav-bar-h)); z-index: 5;
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
   }
   .scard {
