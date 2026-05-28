@@ -299,13 +299,15 @@ scene.background = (() => {
 })();
 
 const camera = new THREE.PerspectiveCamera(25, W/H, 0.1, 100);
-const CAM_Z = 10;
+const CAM_Z = 11;       // 시작 줌(살짝 줌아웃 — 점수카드 위 보상 공간 확보)
 const CAM_X = 0.35;     // 가로 오프셋(+ = 지구 왼쪽으로)
 const CAM_Y = -0.1;     // 세로 오프셋(+ = 지구 아래로 / − = 위로)
 const FULL_Z = 13;      // 허공 클릭 시 풀샷 줌(전체 지구 보이게, 중앙)
 const FULL_Y = -0.5;    // 풀샷 시 카메라 Y(− = 지구를 화면 위로 / 중앙(0)과 -1.0의 중간)
 const Z_MIN = 3;     // 최대 확대
 const Z_MAX = 13;    // 최대 축소 (FULL_Z 풀샷까지 핀치로 줌아웃 가능)
+const INIT_VIEW_OY = 40;  // 시작 구도 렌즈 시프트(px, + = 화면 위로 평행이동)
+const FULL_VIEW_OY = 20;  // 풀샷 렌즈 시프트(px, + = 화면 위로 평행이동)
 camera.position.set(CAM_X, CAM_Y, CAM_Z);
 
 // 조명 — 모두 world 공간 고정. 균등한 base 광(ambient+hemi) + 약한 한 방향 sun.
@@ -709,7 +711,8 @@ let _isMulti = false;
 let _multiStartDist = 0, _multiStartMidX = 0, _multiStartMidY = 0;
 let _multiStartCamZ = 0, _multiStartViewOX = 0, _multiStartViewOY = 0;
 let _downX = 0, _downY = 0, _downHitEarth = false;
-let viewOX = 0, viewOY = 0;
+let viewOX = 0, viewOY = INIT_VIEW_OY;
+camera.setViewOffset(W, H, viewOX, viewOY, W, H);
 let autoRotate = true;
 const ROTATE_SENS = 0.006;
 const TAP_THRESHOLD = 8;        // px — 이동량이 이보다 작으면 탭/클릭으로 간주
@@ -727,7 +730,7 @@ function isEarthHit(clientX, clientY) {
 // 지구 클릭 → 지금 셋팅한 '기본값' 구도로 복귀 (왼쪽위 오프셋 + 초기 회전)
 function resetView() {
   camera.position.set(CAM_X, CAM_Y, CAM_Z);
-  viewOX = 0; viewOY = 0;
+  viewOX = 0; viewOY = INIT_VIEW_OY;
   applyViewOffset();
   _earthQ.copy(_earthQInitial);  // 페이지 로드 시와 동일한 초기 회전으로 복귀
   earth.quaternion.copy(_earthQ);
@@ -738,7 +741,7 @@ function resetView() {
 // 허공 클릭 → 지구 전체가 보이는 풀샷 (중앙 정렬 + 줌아웃, 회전은 유지)
 function fullShotView() {
   camera.position.set(0, FULL_Y, FULL_Z);
-  viewOX = 0; viewOY = 0;
+  viewOX = 0; viewOY = FULL_VIEW_OY;
   applyViewOffset();
   _velX = 0; _velY = 0;
   autoRotate = true;
