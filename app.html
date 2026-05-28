@@ -2071,7 +2071,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
   `;
 
   /* 모바일 상단 상태바 색(theme-color)을 현재 화면/테마 톤에 맞춰 갱신 → 상단 띠가 화면과 어우러짐 */
-  const BAR_COLORS = { museum: '#ded6cb', planet: '#d9e9e6', marble: '#fffbf7' };
+  const BAR_COLORS = { museum: '#c6c0b3', planet: '#d9e9e6', marble: '#fffbf7' };
   function setBarColor() {
     const onDash = document.getElementById('screen-dashboard').classList.contains('active');
     const c = onDash ? (BAR_COLORS[activeTheme] || '#eef5f1') : '#eef5f1';
@@ -2229,7 +2229,7 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     // 너비(innerWidth) 기준이라 하단 시스템바 토글(높이 변화)에도 재스케일/이동이 없어 안 흔들림.
     // 바가 떠도 콘텐츠는 그대로 있고 바만 위에 덮임 → 집어넣으면 그대로 복귀.
     const CROP_TOP = 36;     // 상단 상태바 영역만큼 디자인에서 잘라냄
-    const CROP_BOTTOM = 42;  // 하단 시스템(내비) 바 영역만큼 디자인에서 잘라냄
+    const CROP_BOTTOM = 43;  // 하단 시스템(내비) 바 영역만큼 디자인에서 잘라냄
     let _maxH = 0;
     _ph.style.position = 'fixed';
     _ph.style.left = '0';
