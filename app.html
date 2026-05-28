@@ -2228,17 +2228,18 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     // 너비 맞춤 + 좌상단 고정 + 상단 크롭.
     // 너비(innerWidth) 기준이라 하단 시스템바 토글(높이 변화)에도 재스케일/이동이 없어 안 흔들림.
     // 바가 떠도 콘텐츠는 그대로 있고 바만 위에 덮임 → 집어넣으면 그대로 복귀.
-    const CROP_TOP = 36;   // 상단 상태바 영역 잘라내기 (튜닝 가능)
+    const CROP_TOP = 36;     // 상단 상태바 영역만큼 디자인에서 잘라냄
+    const CROP_BOTTOM = 40;  // 하단 시스템(내비) 바 영역만큼 디자인에서 잘라냄 (--nav-bar-h와 일치)
     let _maxH = 0;
     _ph.style.position = 'fixed';
     _ph.style.left = '0';
     _ph.style.top = '0';
     _ph.style.transformOrigin = 'top left';
     const _fit = () => {
-      // 상태1(시스템바 숨김)의 전체 높이를 기억(max) → 그 높이를 꽉 채움(하단 갭 제거).
-      // 기억값 기준이라 바가 떴다 사라져도 재스케일 안 됨 = 안 흔들림. 넘치는 너비만 양옆 균등 클립.
+      // standalone: 브라우저가 viewport에서 시스템바 영역을 제외해 줌 → innerHeight=안전영역 높이.
+      // 디자인에서도 상·하단을 잘라내고(남은 704px), 그 안전영역에 꽉 채움. 좌우 넘치는 만큼만 균등 클립.
       _maxH = Math.max(_maxH, window.innerHeight);
-      const s = _maxH / (780 - CROP_TOP);
+      const s = _maxH / (780 - CROP_TOP - CROP_BOTTOM);
       const tx = -(360 * s - window.innerWidth) / 2;
       _ph.style.transform = 'translate(' + tx + 'px, ' + (-CROP_TOP * s) + 'px) scale(' + s + ')';
     };
