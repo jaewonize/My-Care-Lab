@@ -676,7 +676,8 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     font-size: 11.5px; color: var(--ink-3); letter-spacing: -.1px;
     opacity: 0; animation: statusFadeIn .25s ease forwards;
   }
-  .agent-status .spinner {
+  /* 공통 spinner — agent-status, 미션 카드 로딩 등 재사용 */
+  .spinner {
     width: 12px; height: 12px; flex: 0 0 12px;
     border: 1.5px solid rgba(20,60,70,.15);
     border-top-color: var(--primary);
@@ -684,6 +685,16 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     animation: spin .9s linear infinite;
   }
   @keyframes spin       { to { transform: rotate(360deg); } }
+
+  /* 미션 카드 로딩 상태 — '지금 상황 감지 중…' */
+  .inline-nudge .in-loading {
+    display: flex; align-items: center; gap: 8px;
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 11.5px; color: var(--ink-3); letter-spacing: -.1px;
+    margin-bottom: 12px;
+    opacity: 0; animation: statusFadeIn .25s ease forwards;
+  }
+  .inline-nudge .in-skel { display: flex; flex-direction: column; gap: 8px; }
   @keyframes statusFadeIn { to { opacity: 1; } }
 
   /* 카드 스켈레톤 → 실제 데이터로 채워짐 (데이터 발견 시각 효과) */
@@ -2232,8 +2243,24 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     nudgeMount.querySelector('.in-skip').addEventListener('click', (e) => {
       e.stopPropagation();
       nudgeIdx = (nudgeIdx + 1) % NUDGES.length;   // '나중에' → 다음 미션으로
-      renderNudge();
+      renderNudgeWithLoading('다음 맥락 감지 중…');
     });
+  }
+  // 미션 카드 로딩 → 실 데이터 reveal (실시간 컨텍스트 감지 무대감)
+  function renderNudgeWithLoading(label, delay) {
+    if (!nudgeMount) return;
+    nudgeMount.innerHTML = `
+      <div class="in-loading">
+        <div class="spinner"></div>
+        <span>${label || '실시간 맥락 감지 중…'}</span>
+      </div>
+      <div class="in-skel">
+        <div class="sk-line w50 skel-bar" style="height:10px"></div>
+        <div class="sk-line w70 skel-bar" style="height:16px"></div>
+        <div class="sk-line w70 skel-bar" style="height:10px"></div>
+      </div>
+    `;
+    setTimeout(() => { renderNudge(); }, delay || 1000);
   }
   if (nudgeMount) renderNudge();
 
@@ -2248,7 +2275,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       const open = card.hidden;
       card.hidden = !open;
       sec.classList.toggle('open', open);
-      if (open) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (open) {
+        // 펼침 시: 실시간 맥락 감지 로딩 → 실 미션 노출
+        renderNudgeWithLoading('지금 상황 감지 중…');
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     });
   })();
 
@@ -2426,7 +2457,10 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const mSec = document.getElementById('missionSec');
     if (mCard) mCard.hidden = false;
     if (mSec) mSec.classList.add('open');
+    // 사용자가 보상을 보고 다시 솔루션 탭에 돌아오면 '실시간 맥락 감지 중…' 로딩 → 새 미션 reveal
+    _missionNeedsReveal = true;
   }
+  let _missionNeedsReveal = false;
 
   /* 탭바: 대시보드 ↔ 실험실 */
   document.querySelectorAll('.tab[data-screen]').forEach(btn => {
@@ -2462,6 +2496,11 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     const fn = (id === 'screen-dashboard') ? '__resumeRender' : '__pauseRender';
     try { active && active.contentWindow && active.contentWindow[fn] && active.contentWindow[fn](); } catch (e) {}
     setBarColor();
+    // 보상 후 솔루션 탭 복귀 시: 새 미션이 로딩 → reveal 시퀀스로 등장 (한 번만)
+    if (id === 'screen-home' && _missionNeedsReveal) {
+      _missionNeedsReveal = false;
+      renderNudgeWithLoading('실시간 맥락 감지 중…');
+    }
   };
 
   /* 초기화: 대시보드 시작 + 활성 테마 iframe 로드 */
