@@ -2526,7 +2526,9 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
       // 디자인에서도 상·하단을 잘라내고(남은 704px), 그 안전영역에 꽉 채움. 좌우 넘치는 만큼만 균등 클립.
       _maxH = Math.max(_maxH, window.innerHeight);
       const s = _maxH / (780 - CROP_TOP - CROP_BOTTOM);
-      const tx = -(360 * s - window.innerWidth) / 2;
+      // tx를 floor로 정수 정렬 → 좌측 가장자리 sub-pixel 안티에일리어싱(1px 흰선) 제거.
+      // (소수 값일 때 좌측이 분수 픽셀 위치에 떨어지면 폰 배경과 body 배경 사이에 흰빛 띠 생김)
+      const tx = Math.floor(-(360 * s - window.innerWidth) / 2);
       _ph.style.transform = 'translate(' + tx + 'px, ' + (-CROP_TOP * s) + 'px) scale(' + s + ')';
     };
     window.addEventListener('resize', _fit);
