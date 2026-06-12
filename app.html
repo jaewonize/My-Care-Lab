@@ -2535,16 +2535,21 @@ document.documentElement.classList.toggle('embed', location.search.indexOf('embe
     _fit();
 
     /* 숨은 제스처: 상단 가장자리 더블탭 → 새로고침 (시연용, 화면엔 안 보임).
-       갤러리 iframe 위에서도 먹히도록 부모에 투명 히트존을 둠. */
-    const _hit = document.createElement('div');
-    _hit.style.cssText = 'position:fixed;left:64px;right:110px;top:0;height:64px;z-index:99999;background:transparent;';  // 좌측 64px는 채팅 뒤로가기, 우측 110px는 테마 도트용으로 비움
-    let _lastTap = 0;
-    _hit.addEventListener('pointerup', () => {
-      const now = Date.now();
-      if (now - _lastTap < 400) location.reload();
-      _lastTap = now;
-    });
-    document.body.appendChild(_hit);
+       갤러리 iframe 위에서도 먹히도록 부모에 투명 히트존을 둠.
+       모바일(coarse pointer)에서만 활성 — PC에선 뷰포트 기준 제외 영역(우 110px)이 폰 우상단
+       테마 도트와 겹쳐 클릭 막힘. PC는 F5/Cmd+R로 새로고침 가능하니 히트존 불필요. */
+    const _isTouch = matchMedia('(pointer: coarse)').matches;
+    if (_isTouch) {
+      const _hit = document.createElement('div');
+      _hit.style.cssText = 'position:fixed;left:64px;right:110px;top:0;height:64px;z-index:99999;background:transparent;';
+      let _lastTap = 0;
+      _hit.addEventListener('pointerup', () => {
+        const now = Date.now();
+        if (now - _lastTap < 400) location.reload();
+        _lastTap = now;
+      });
+      document.body.appendChild(_hit);
+    }
   }
 </script>
 </body>
